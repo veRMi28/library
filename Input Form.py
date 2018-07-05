@@ -52,12 +52,16 @@ def handler(c):
     # remove it from the list
     responses = {}
     while tasks:
-        task = c.waitFor(*tasks)
+        if allow_empty:
+            task = c.waitFor(*tasks, unexpected='ignore')
+        else:
+            task = c.waitFor(*tasks)
         outputs = task.getOutputs()
         field = outputs['reference']
         if not allow_empty and (not outputs or 'response' not in outputs):
             return c.end('error', f'did not get a response for "{field}"')
-        responses[field] = outputs.get('response')
+        if 'response' in outputs:
+            responses[field] = outputs['response']
         tasks = [t for t in tasks if t.execution_id != task.execution_id]
 
     # all questions answerd, set the outputs
