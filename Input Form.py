@@ -39,7 +39,7 @@ def handler(c):
         if request.get('type') == 'password':
             protect_outputs = ['response']
         task = c.task(
-            'TaskInput',
+            'INPUT',
             name=field,
             reference=field,
             retention_time=1,

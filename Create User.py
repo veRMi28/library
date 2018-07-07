@@ -44,7 +44,7 @@ def handler(c):
         'data': json.dumps(user)
     }
     execution = c.task(
-        'TaskRequests',
+        'REST',
         inputs=request,
         pass_user_token=True,
         protect_inputs=['data']
