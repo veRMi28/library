@@ -53,7 +53,7 @@ def handler(c):
     response = json.loads(outputs['text'])
 
     # Success
-    c.print(
+    c.log(
         f'user "{response["name"]}" '
         f'with ID "{response["id"]}" '
         'was created successfully'
