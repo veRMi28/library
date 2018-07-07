@@ -3,13 +3,15 @@ This flow script queries values in parallel.
 
 inputs:
     - questions:
-        description: a dict mapping a field name to a question or an options dict.
+        description:
+            | a dict mapping a field name to a question or an options dict.
         required: true
     - timeout:
         description:
             | minutes until the input request expires.
             | specify 0 to disable the timeout.
-            | if ommited or None, the default timeout of 10 minutes will be used.
+            | if ommited or None, the default timeout of 10 minutes will be
+            | used.
         default: None
     - allow_empty:
         description: if an empty response should be accepted.
@@ -23,7 +25,7 @@ def handler(c):
     try:
         questions = inputs['questions']
         assert type(questions) == dict
-    except:
+    except BaseException:
         return c.end('error', 'missing or invalid input "questions"')
     timeout = inputs.get('timeout')
     allow_empty = inputs.get('allow_empty', False)

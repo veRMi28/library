@@ -7,7 +7,7 @@ def handler(c):
     try:
         flow_name = inputs['flow_name']
         assert type(flow_name) == str
-    except Exception:
+    except BaseException:
         return c.end('error', 'missing or invalid input "flow_name"')
 
     # Optional input: do_query
@@ -75,7 +75,10 @@ def handler(c):
             'iterations': iterations,
             'max_iterations': max_iterations,
         }
-        child = c.flow(flow_name, inputs=inputs, name=f'iteration #{iterations}')
+        child = c.flow(
+            flow_name,
+            inputs=inputs,
+            name=f'iteration #{iterations}')
         if wait:
             child.run()
             c.sleep(interval)
