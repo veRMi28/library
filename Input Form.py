@@ -42,7 +42,6 @@ def handler(c):
             'INPUT',
             name=field,
             reference=field,
-            # retention_time=1,
             request=request['label'],
             timeout=timeout,
             protect_outputs=protect_outputs
@@ -68,3 +67,4 @@ def handler(c):
 
     # all questions answerd, set the outputs
     c.setOutput('responses', responses)
+    c.end('success', 'all done')
