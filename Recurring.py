@@ -2,7 +2,7 @@ import time
 
 
 def handler(c):
-    # Required input: flow_name
+    # Required input: flow_name or flow_id
     inputs = c.getInputs()
     try:
         flow = inputs['flow_name']
