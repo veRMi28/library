@@ -78,10 +78,8 @@ def handler(c):
     # Loop
     iterations = 0
     start = time.time()
-    while True:
+    while max_iterations == 0 or iterations < max_iterations:
         iterations += 1
-        if max_iterations != 0 and iterations > max_iterations:
-            break
         # Start child execution
         inputs = {
             'start': start,
