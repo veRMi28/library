@@ -42,7 +42,7 @@ def handler(c):
             'INPUT',
             name=field,
             reference=field,
-            retention_time=1,
+            # retention_time=1,
             request=request['label'],
             timeout=timeout,
             protect_outputs=protect_outputs
