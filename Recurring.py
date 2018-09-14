@@ -5,10 +5,15 @@ def handler(c):
     # Required input: flow_name
     inputs = c.getInputs()
     try:
-        flow_name = inputs['flow_name']
-        assert type(flow_name) == str
+        flow = inputs['flow_name']
+        assert type(flow) == str
     except BaseException:
-        return c.end('error', 'missing or invalid input "flow_name"')
+        try:
+            flow = inputs['flow_id']
+            assert type(flow) == int
+        except BaseException:
+            return c.end(
+                'error', 'missing or invalid input "flow_name" or "flow_id"')
 
     # Optional input: do_query
     do_query = str(inputs.get('do_query', False)) == 'True'
@@ -76,7 +81,7 @@ def handler(c):
             'max_iterations': max_iterations,
         }
         child = c.flow(
-            flow_name,
+            flow,
             inputs=inputs,
             name=f'iteration #{iterations}')
         if wait:
