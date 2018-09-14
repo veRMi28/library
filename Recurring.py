@@ -14,10 +14,12 @@ def handler(c):
         except BaseException:
             return c.end(
                 'error', 'missing or invalid input "flow_name" or "flow_id"')
+    c.setOutput('flow', flow)
 
     # Optional input: do_query
     do_query = str(inputs.get('do_query', False)) == 'True'
     questions = {}
+    c.setOutput('do_query', do_query)
 
     # Optional input: interval
     if 'interval' in inputs:
@@ -29,6 +31,7 @@ def handler(c):
         }
     else:
         interval = 60  # Default value
+        c.setOutput('interval', interval)
 
     # Optional input: wait
     if 'wait' in inputs:
@@ -40,6 +43,7 @@ def handler(c):
         }
     else:
         wait = False  # Default value
+        c.setOutput('wait', wait)
 
     # Optional input: max_iterations
     if 'max_iterations' in inputs:
@@ -51,6 +55,7 @@ def handler(c):
         }
     else:
         max_iterations = 0  # Default value
+        c.setOutput('max_iterations', max_iterations)
 
     # Query additional settings
     if do_query and questions:
@@ -62,10 +67,13 @@ def handler(c):
         outputs = input_form.getOutputs()
         if interval is None:
             interval = int(outputs['responses'].get('interval', 60))
+            c.setOutput('interval', interval)
         if wait is None:
             wait = str(outputs['responses'].get('wait', False)) == 'True'
+            c.setOutput('wait', wait)
         if max_iterations is None:
             max_iterations = int(outputs['responses'].get('max_iterations', 0))
+            c.setOutput('max_iterations', max_iterations)
 
     # Loop
     iterations = 0
@@ -89,6 +97,6 @@ def handler(c):
             c.sleep(interval)
         else:
             child.runAsync()
-            c.sleep(start + (iterations * interval) - time.time())
+            c.sleep_until(start + (iterations * interval))
 
     c.end('success', f'successfully started {iterations} iterations')
