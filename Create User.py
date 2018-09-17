@@ -38,8 +38,9 @@ def handler(c):
     user = outputs['responses']  # the responses dict is the user
 
     # Send user creation request
+    instance = c.getInstance()
     request = {
-        'url': 'https://starflows.com/api/1/user',
+        'url': f'https://{instance}.cloudomation.io/api/1/user',
         'method': 'post',
         'data': json.dumps(user)
     }
