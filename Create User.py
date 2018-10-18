@@ -50,12 +50,11 @@ def handler(c):
         pass_user_token=True,
         protect_inputs=['data']
     ).run()
-    outputs = execution.getOutputs()
-    response = json.loads(outputs['text'])
+    user_id = execution.getOutputs()['json']['id']
 
     # Success
     c.log(
-        f'user "{response["name"]}" '
-        f'with ID "{response["id"]}" '
+        f'user "{user["name"]}" '
+        f'with ID "{user_id}" '
         'was created successfully'
     )
