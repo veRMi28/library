@@ -17,9 +17,6 @@ def handler(c):
         'name': {
             'label': 'New user name',
         },
-        'display_name': {
-            'label': 'New user display name',
-        },
         'email': {
             'label': 'New user email address',
         },
