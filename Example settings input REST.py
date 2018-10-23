@@ -1,4 +1,4 @@
-"""
+'''
 This flow script shows how the REST and INPUT tasks can be used together, by
 requesting parameters for a REST API call from a user.
 In this small example, a user is asked for a country name. The flow script then
@@ -16,13 +16,14 @@ use your own account to execute this flow script. If not, we will use the demo
 user name provided by geonames for demo purposes only. Since this demo account
 also has usage limits, there is a chance that the flow script will fail due to
 these limits.
-"""
+'''
+
 
 # (1) define handler function for the Cloudomation class (c)
 def handler(c):
 
 # (2) use settings
-    """
+    '''
     To use the geonames REST API, it is required to register an application,
     which is identified via a user name that has to be provided with every
     REST call. The best way to manage parameters like this is to store them
@@ -37,7 +38,7 @@ def handler(c):
     contains the user name to demonstate how to use settings.
     NOTE that settings are not intended for passwords or other sensible
     information. For passwords, we recommend the use of Hashicorp Vault.
-    """
+    '''
 
     # we check if there is a setting with the key geonames_username
     if c.setting('geonames_username') is None:
@@ -78,6 +79,7 @@ def handler(c):
     # because we want to learn about the INPUT task, we log all the outputs to
     # see what we get back. This is not required, we do this just for learning
     # purposes. Take a look at the log to see what the INPUT task returns.
+    c.logln('Outputs of the INPUT task:')
     c.logln(countryname_result)
 
     # It returns a JSON element and we can access the individual elements with
@@ -86,13 +88,13 @@ def handler(c):
     countryname = countryname_result['response']
 
 # (4) use REST task
-    """
+    '''
     Now, we want to get some information about the country. To request
     formation about a country, the geonames API requires the ISO-2 country code
     of that country, so our first request will be to get the ISO-2 country code
     for the country name. This is also an opportunity for us to see if the user
     input a valid country name - if they didn't, this request will fail.
-    """
+    '''
 
     # Here, we use the two previously defined paramenters: the username we read
     # from a setting, and the country name from the user input. Then we execute
@@ -100,11 +102,14 @@ def handler(c):
     # formatting functionality for defining the URL with parameters.
     countrycode_request = c.task(
         'REST',
-        url = f'http://api.geonames.org/search?name={
-            countryname
-        }&featureCode=PCLI&type=JSON&username={
-            username
-        }').run()
+        url=(
+            f'http://api.geonames.org/search?'
+            f'name={countryname}&'
+            f'featureCode=PCLI'
+            f'&type=JSON'
+            f'&username={username}'
+        )
+    ).run()
     # again, we execute the REST task right away and store the resulting
     # execution object in a variable: countrycode_request
 
@@ -112,7 +117,13 @@ def handler(c):
     countrycode_response = countrycode_request.getOutputs()
 
     # First, we need to check if the REST call returned anything. If it didn't,
-    # we will end the execution and inform the user. If it did, we will continue.
+    # we will end the execution and inform the user. If it did, we continue.
+
+    # because we want to learn about the REST task, we log the response
+    # returned by the REST call. Take a look at the log to see what is returend
+    # by the REST call. It is again a JSON whose elements we can access.
+    c.logln('Outputs of the country code REST task:')
+    c.logln(countrycode_response)
 
     # the geonames call returns the number of search results, which we access:
     response_count = countrycode_response['json']['totalResultsCount']
@@ -127,14 +138,6 @@ def handler(c):
             message='We could not find the country you named.'
         )
 
-    # because we want to learn about the REST task, we log the response
-    # returned by the REST call. Note that here, we use c.logln, which appends
-    # a new line to the log. You could use c.log as well, which would append a
-    # string - doesn't look as nice, though, se we use c.logln to log our
-    # results in a new line. Take a look at the log to see what is returend by
-    # the REST call. It is again a JSON whose elements we can access.
-    c.logln(countrycode_response)
-
     # we access the country code. If you look at the response which we logged,
     # you will see that the JSON is nested so we need to go through a few
     # layers before we get to the country code.
@@ -145,14 +148,22 @@ def handler(c):
     # about the country
     countryinfo_request = c.task(
         'REST',
-        url = f'http://api.geonames.org/countryInfo?country={
-            countrycode
-        }&type=JSON&username={
-            username
-        }').run()
+        url=(
+            f'http://api.geonames.org/countryInfo?'
+            f'country={countrycode}'
+            f'&type=JSON'
+            f'&username={username}'
+        )
+    ).run()
 
     # we get the ouput from the execution object
     countryinfo_result = countryinfo_request.getOutputs()['json']['geonames'][0]
+
+    # because we want to learn about the REST task, we log the response
+    # returned by the REST call. Take a look at the log to see what is returend
+    # by the REST call. It is again a JSON whose elements we can access.
+    c.logln('Outputs of the country information REST task:')
+    c.logln(countryinfo_result)
 
 # (6) give the user some information about the country and ask for  feedback
     # now that we already saw how the INPUT task works, we chain it all
@@ -160,17 +171,12 @@ def handler(c):
     # object in a separate variable.
     user_feedback = c.task(
         'INPUT',
-        request=(f'Here is some information about {
-                countryname
-            }. It is located in {
-                countryinfo_result['continentName']
-            }, its capital is {
-                countryinfo_result['capital']
-            }, it has a population of {
-                countryinfo_result['population']
-            }, and an area of {
-                countryinfo_result['areaInSqKm']
-            } square kilometers. Did you like this information?'
+        request=(f'Here is some information about  {countryname}. It is '
+                 f'located in {countryinfo_result["continentName"]}, '
+                 f'its capital is {countryinfo_result["capital"]}, '
+                 f'it has a population of {countryinfo_result["population"]}, '
+                 f'and an area of {countryinfo_result["areaInSqKm"]} '
+                 f'square kilometers. Did you like this information?')
         ).run(
     ).getOutputs()['response']
 
@@ -178,7 +184,7 @@ def handler(c):
     # we add the user feedback to the end message
     c.end(
         'success',
-        message=f'Country info provided. Did the user like the information? {
-            user_feedback
-        }'
+        message=(
+            f'Country info provided. Did the user like the information? '
+            f'{user_feedback}')
     )
