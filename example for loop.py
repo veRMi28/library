@@ -123,7 +123,7 @@ def handler(c):
             # which is returned by the geonames API, we need to loop through
             # the result.
             capitalcoordinates = [
-                capitalcoordinates_response[i] for i in ['lat', 'lng']
+                float(capitalcoordinates_response[i]) for i in ['lat', 'lng']
             ]
 
 # (5) Set outputs - this is still part of the for loop, so the results for
