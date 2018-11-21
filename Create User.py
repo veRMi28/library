@@ -2,13 +2,10 @@
 This flow script creates an user object.
 
 It queries for the details of the new user, and then sends a POST
-request to the starflows.com API. Credentials of the user executing
+request to the cloudomation.io API. Credentials of the user executing
 the flow script will be used to authenticate against the
-starflows.com API.
+cloudomation.io API.
 """
-
-
-import json
 
 
 def handler(c):
@@ -39,7 +36,7 @@ def handler(c):
     request = {
         'url': f'https://{instance}.cloudomation.io/api/1/user',
         'method': 'post',
-        'data': json.dumps(user)
+        'data': user
     }
     execution = c.task(
         'REST',
