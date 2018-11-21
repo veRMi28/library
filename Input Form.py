@@ -44,7 +44,8 @@ def handler(c):
             reference=field,
             request=request['label'],
             timeout=timeout,
-            protect_outputs=protect_outputs
+            protect_outputs=protect_outputs,
+            type=request.get('type', 'string'),
         ).runAsync()
         tasks.append(task)
 
