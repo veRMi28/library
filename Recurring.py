@@ -12,8 +12,7 @@ def handler(c):
             flow = inputs['flow_id']
             assert type(flow) == int
         except BaseException:
-            return c.end(
-                'error', 'missing or invalid input "flow_name" or "flow_id"')
+            return c.error('missing or invalid input "flow_name" or "flow_id"')
     c.setOutput('flow', flow)
 
     # Optional input: do_query
