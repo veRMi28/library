@@ -19,6 +19,9 @@ inputs:
 """
 
 
+from cloudomation import UnexpectedStatusOptions
+
+
 def handler(c):
     # Read and validate inputs
     inputs = c.getInputs()
@@ -26,7 +29,7 @@ def handler(c):
         questions = inputs['questions']
         assert type(questions) == dict
     except BaseException:
-        return c.end('error', 'missing or invalid input "questions"')
+        return c.error('missing or invalid input "questions"')
     timeout = inputs.get('timeout')
     allow_empty = inputs.get('allow_empty', False)
 
@@ -55,7 +58,7 @@ def handler(c):
     responses = {}
     while tasks:
         if allow_empty:
-            task = c.waitFor(*tasks, unexpected='ignore')
+            task = c.waitFor(*tasks, unexpected=UnexpectedStatusOptions.IGNORE)
         else:
             task = c.waitFor(*tasks)
         outputs = task.getOutputs()
