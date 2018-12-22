@@ -28,7 +28,7 @@ def handler(c):
         name = flow[:-3]
         flow_dict = {
             'name': name,
-            'script_content': content,
+            'script': content,
         }
         # update the flow script in cloudomation. the API will automatically
         # fall back to POST (creating a record) when the record is not found.
@@ -46,7 +46,7 @@ def handler(c):
         name = setting[:-5]
         setting_dict = {
             'name': name,
-            'variable_value': content,
+            'value': content,
         }
         # update the setting in cloudomation. the API will automatically
         # fall back to POST (creating a record) when the record is not found.
