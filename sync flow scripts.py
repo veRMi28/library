@@ -1,4 +1,5 @@
 import urllib.parses
+import yaml
 
 
 def handler(c):
@@ -46,7 +47,8 @@ def handler(c):
     settings = c.list_dir('repo/settings', '**/*.yaml')
     c.setOutput('settings', settings)
     for setting in settings:
-        content = c.file(f'repo/settings/{setting}')
+        content_str = c.file(f'repo/settings/{setting}')
+        content = yaml.safe_load(content_str)
         name = setting[:-5]
         urlname = urllib.parse.quote(name)
         setting_dict = {
