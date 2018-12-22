@@ -3,7 +3,7 @@ import time
 
 def handler(c):
     # Required input: flow_name or flow_id
-    inputs = c.getInputs()
+    inputs = c.get_inputs()
     try:
         flow = inputs['flow_name']
         assert type(flow) == str
@@ -14,12 +14,12 @@ def handler(c):
         except BaseException:
             return c.end(
                 'error', 'missing or invalid input "flow_name" or "flow_id"')
-    c.setOutput('flow', flow)
+    c.set_output('flow', flow)
 
     # Optional input: do_query
     do_query = str(inputs.get('do_query', False)) == 'True'
     questions = {}
-    c.setOutput('do_query', do_query)
+    c.set_output('do_query', do_query)
 
     # Optional input: use
     default_use = 'delay'
@@ -32,7 +32,7 @@ def handler(c):
         }
     else:
         use = default_use
-        c.setOutput('use', use)
+        c.set_output('use', use)
 
     # Optional input: timestamp
     default_timestamp = int(time.time()) + 60
@@ -45,7 +45,7 @@ def handler(c):
         }
     else:
         timestamp = default_timestamp  # Default value
-        c.setOutput('timestamp', timestamp)
+        c.set_output('timestamp', timestamp)
 
     # Optional input: delay
     default_delay = 60
@@ -58,7 +58,7 @@ def handler(c):
         }
     else:
         delay = default_delay  # Default value
-        c.setOutput('delay', delay)
+        c.set_output('delay', delay)
 
     # Query additional settings
     if do_query and questions:
@@ -67,16 +67,16 @@ def handler(c):
             questions=questions,
             allow_empty=True,
         ).run()
-        outputs = input_form.getOutputs()
+        outputs = input_form.get_outputs()
         if use is None:
             use = outputs['responses'].get('use', default_use)
-            c.setOutput('use', use)
+            c.set_output('use', use)
         if timestamp is None:
             timestamp = int(outputs['responses'].get('timestamp', default_timestamp))
-            c.setOutput('timestamp', timestamp)
+            c.set_output('timestamp', timestamp)
         if delay is None:
             delay = int(outputs['responses'].get('delay', default_delay))
-            c.setOutput('delay', delay)
+            c.set_output('delay', delay)
 
     if use == "timestamp":
         c.log(f'sleeping until {timestamp}')
@@ -89,6 +89,6 @@ def handler(c):
         flow,
         inputs=inputs,
         name='scheduled')
-    child.runAsync()
+    child.run_async()
 
     c.end('success', f'successfully started {flow}')

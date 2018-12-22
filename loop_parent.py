@@ -81,10 +81,10 @@ def handler(c):
             # inputs parameter. The below line is equivalent to
             # inputs = { 'countryname': countryname }
             countryname = countryname
-        # runAsync() starts the child execution and then immediately returns.
+        # run_async() starts the child execution and then immediately returns.
         # This means that the for loop continues and the next child execution
         # is started right away - the REST calls will be executed in parallel.
-        ).runAsync()
+        ).run_async()
         # All execution objects are appended to the calls list.
         calls.append(call)
 
@@ -92,14 +92,14 @@ def handler(c):
     # Here, I tell the flow script to wait for all elements in the calls list
     # to finish before it continues. Remember that the calls list contains all
     # execution objects that we started in the for loop.
-    c.waitForAll(*calls)
+    c.wait_for_all(*calls)
 
 # (5) Get outputs of child executions, and set outputs of parent execution
     # Now, we take all the execution objects and get their outputs. Depending
     # on whether or not there was an error, we treat the results differently.
     for call in calls:
         # Get all outputs from all child executions
-        result = call.getOutputs()
+        result = call.get_outputs()
         # If there was an error, append the output of the erroneous execution
         # to our list of invalid country names.
         if 'error' in result:
@@ -108,16 +108,16 @@ def handler(c):
         # to the output of the child executions.
         else:
             for k, v in result.items():
-                c.setOutput(k, v)
+                c.set_output(k, v)
 
     # The errors need a bit more processing: here, we set an output that
     # contains the key "warning", information about the number of failed calls,
     # and the country names for which there was an error.
     if len(invalids) > 0:
-        c.setOutput(
+        c.set_output(
             'warning',
             f'no information was found for {len(invalids)} countries')
-        c.setOutput('invalid countries', invalids)
+        c.set_output('invalid countries', invalids)
 
 # (6) Once we're done we end the execution.
     c.success(message='all done')

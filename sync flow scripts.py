@@ -3,8 +3,8 @@ import yaml
 
 
 def handler(c):
-    env_name = c.getEnvName()
-    inputs = c.getInputs()
+    env_name = c.get_env_name()
+    inputs = c.get_inputs()
     # this flow is registered as webhook, triggered by a commit to the
     # repository. The commit sha is passed in .data_json.commit_sha
     # when started manually, it will sync from master
@@ -26,7 +26,7 @@ def handler(c):
     ).run()
     # list all flows from the repository
     flows = c.list_dir('repo/flows', glob='**/*.py')
-    c.setOutput('flows', flows)
+    c.set_output('flows', flows)
     for flow in flows:
         content = c.file(f'repo/flows/{flow}')
         name = flow[:-3]
@@ -43,9 +43,9 @@ def handler(c):
             method='PATCH',
             json=flow_dict,
             pass_user_token=True,
-        ).runAsync()
+        ).run_async()
     settings = c.list_dir('repo/settings', '**/*.yaml')
-    c.setOutput('settings', settings)
+    c.set_output('settings', settings)
     for setting in settings:
         content_str = c.file(f'repo/settings/{setting}')
         content = yaml.safe_load(content_str)
@@ -63,5 +63,5 @@ def handler(c):
             method='PATCH',
             json=setting_dict,
             pass_user_token=True,
-        ).runAsync()
+        ).run_async()
     c.success(message='all done')

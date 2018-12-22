@@ -19,7 +19,7 @@ def handler(c):
                '''
     ).run()
 
-    report = info_task.getOutputs()['report']
+    report = info_task.get_outputs()['report']
     hostname = re.search("hostname '([^']*)'", report).group(1)
     username = re.search("username '([^']*)'", report).group(1)
     cpu = re.search("cpu '([^']*)'", report).group(1)
@@ -38,7 +38,7 @@ def handler(c):
                '''
     ).run()
 
-    report = uptime_task.getOutputs()['report']
+    report = uptime_task.get_outputs()['report']
     up_since = re.search("up since '([^']*)'", report).group(1)
 
     c.logln(f'{hostname} is up since {up_since}')

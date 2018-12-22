@@ -2,7 +2,7 @@ def handler(c):
     # create a task to request input from a user and run it
     task = c.task('INPUT', request='please enter a number').run()
     # access the response
-    response = task.getOutputs()['response']
+    response = task.get_outputs()['response']
     try:
         # try to convert the string response to a float
         number = float(response)

@@ -28,11 +28,11 @@ def handler(c):
         protect_outputs=['responses']  # protect responses,
                                        # they contain a password
     ).run()
-    outputs = execution.getOutputs()
+    outputs = execution.get_outputs()
     user = outputs['responses']  # the responses dict is the user
 
     # Send user creation request
-    instance = c.getInstance()
+    instance = c.get_env_name()
     request = {
         'url': f'https://{instance}.cloudomation.io/api/1/user',
         'method': 'post',
@@ -44,7 +44,7 @@ def handler(c):
         pass_user_token=True,
         protect_inputs=['data']
     ).run()
-    user_id = execution.getOutputs()['json']['id']
+    user_id = execution.get_outputs()['json']['id']
 
     # Success
     c.log(

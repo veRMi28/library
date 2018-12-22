@@ -74,7 +74,7 @@ def handler(c):
     # the execution, i.e. which task you ran.
 
     # we get the outputs and store them in a variable 'countryname_results'
-    countryname_result = countryname_request.getOutputs()
+    countryname_result = countryname_request.get_outputs()
 
     # because we want to learn about the INPUT task, we log all the outputs to
     # see what we get back. This is not required, we do this just for learning
@@ -114,7 +114,7 @@ def handler(c):
     # execution object in a variable: countrycode_request
 
     # now we get the response returned from the REST call
-    countrycode_response = countrycode_request.getOutputs()
+    countrycode_response = countrycode_request.get_outputs()
 
     # First, we need to check if the REST call returned anything. If it didn't,
     # we will end the execution and inform the user. If it did, we continue.
@@ -157,7 +157,7 @@ def handler(c):
     ).run()
 
     # we get the ouput from the execution object
-    countryinfo_result = countryinfo_request.getOutputs()['json']['geonames'][0]
+    countryinfo_result = countryinfo_request.get_outputs()['json']['geonames'][0]
 
     # because we want to learn about the REST task, we log the response
     # returned by the REST call. Take a look at the log to see what is returend
@@ -178,7 +178,7 @@ def handler(c):
                  f'and an area of {countryinfo_result["areaInSqKm"]} '
                  f'square kilometers. Did you like this information?')
         ).run(
-    ).getOutputs()['response']
+    ).get_outputs()['response']
 
 # (7) end execution
     # we add the user feedback to the end message

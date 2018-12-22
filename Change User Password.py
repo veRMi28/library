@@ -7,7 +7,7 @@ to the cloudomation.io API.
 
 
 def handler(c):
-    inputs = c.getInputs()
+    inputs = c.get_inputs()
     user_name = inputs['user_name']
 
     # Query user details
@@ -31,7 +31,7 @@ def handler(c):
         protect_outputs=['responses']  # protect responses,
                                        # they contain a password
     ).run()
-    outputs = execution.getOutputs()
+    outputs = execution.get_outputs()
     resp = outputs['responses']
 
     if resp['new_password'] != resp['new_password_check']:
@@ -43,7 +43,7 @@ def handler(c):
     }
 
     # Send change password request
-    instance = c.getInstance()
+    instance = c.get_env_name()
     request = {
         'url': f'https://{instance}.cloudomation.io/api/1/user/{user_name}',
         'method': 'patch',

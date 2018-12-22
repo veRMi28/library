@@ -24,7 +24,7 @@ from cloudomation import UnexpectedStatusOptions
 
 def handler(c):
     # Read and validate inputs
-    inputs = c.getInputs()
+    inputs = c.get_inputs()
     try:
         questions = inputs['questions']
         assert type(questions) == dict
@@ -49,7 +49,7 @@ def handler(c):
             timeout=timeout,
             protect_outputs=protect_outputs,
             type=request.get('type', 'string'),
-        ).runAsync()
+        ).run_async()
         tasks.append(task)
 
     # wait for any of the tasks to finish
@@ -58,10 +58,10 @@ def handler(c):
     responses = {}
     while tasks:
         if allow_empty:
-            task = c.waitFor(*tasks, unexpected=UnexpectedStatusOptions.IGNORE)
+            task = c.wait_for(*tasks, unexpected=UnexpectedStatusOptions.IGNORE)
         else:
-            task = c.waitFor(*tasks)
-        outputs = task.getOutputs()
+            task = c.wait_for(*tasks)
+        outputs = task.get_outputs()
         field = outputs['reference']
         if not allow_empty and (not outputs or 'response' not in outputs):
             return c.end('error', f'did not get a response for "{field}"')
@@ -70,5 +70,5 @@ def handler(c):
         tasks = [t for t in tasks if t.execution_id != task.execution_id]
 
     # all questions answerd, set the outputs
-    c.setOutput('responses', responses)
+    c.set_output('responses', responses)
     c.end('success', 'all done')

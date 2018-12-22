@@ -40,8 +40,8 @@ def handler(c):
 # (3) get inputs from parent execution
     # The parent execution passed inputs to this execution, therefore we
     # don't need to specify an execution ID from which to get the inputs.
-    # c.getInputs() will capture the inputs given by the parent execution.
-    countryname = c.getInputs()['countryname']
+    # c.get_inputs() will capture the inputs given by the parent execution.
+    countryname = c.get_inputs()['countryname']
 
 # (4) call the geonames API
 
@@ -53,14 +53,14 @@ def handler(c):
              f'&type=JSON'
              f'&username={username}')
     ).run(
-    ).getOutputs(
+    ).get_outputs(
     )['json']['geonames']
 
     # Check if the result contains something
     if not countrycode_response:
         # If it doesn't, we set the output to error and send back the
         # invalid country name
-        c.setOutput('error', countryname)
+        c.set_output('error', countryname)
 
     else:
         # If there is a valid response, we continue with the API calls
@@ -72,7 +72,7 @@ def handler(c):
                  f'&type=JSON'
                  f'&username={username}')
         ).run(
-        ).getOutputs(
+        ).get_outputs(
         )['json']['geonames'][0]['capital']
 
         capitalcoordinates_response = c.task(
@@ -83,7 +83,7 @@ def handler(c):
                  f'&type=JSON'
                  f'&username={username}')
         ).run(
-        ).getOutputs(
+        ).get_outputs(
         )['json']['geonames'][0]
 
         # The coordinates are two values. To access them by key in the json
@@ -98,7 +98,7 @@ def handler(c):
         }
 
 # (5) Set outputs
-        c.setOutput(capitalname, capitalcoordinates)
+        c.set_output(capitalname, capitalcoordinates)
 
 # (6) Once we're done we end the execution.
     c.success(message='all done')

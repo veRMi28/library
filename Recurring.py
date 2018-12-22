@@ -3,7 +3,7 @@ import time
 
 def handler(c):
     # Required input: flow_name or flow_id
-    inputs = c.getInputs()
+    inputs = c.get_inputs()
     try:
         flow = inputs['flow_name']
         assert type(flow) == str
@@ -13,12 +13,12 @@ def handler(c):
             assert type(flow) == int
         except BaseException:
             return c.error('missing or invalid input "flow_name" or "flow_id"')
-    c.setOutput('flow', flow)
+    c.set_output('flow', flow)
 
     # Optional input: do_query
     do_query = str(inputs.get('do_query', False)) == 'True'
     questions = {}
-    c.setOutput('do_query', do_query)
+    c.set_output('do_query', do_query)
 
     # Optional input: interval
     if 'interval' in inputs:
@@ -30,7 +30,7 @@ def handler(c):
         }
     else:
         interval = 60  # Default value
-        c.setOutput('interval', interval)
+        c.set_output('interval', interval)
 
     # Optional input: wait
     if 'wait' in inputs:
@@ -42,7 +42,7 @@ def handler(c):
         }
     else:
         wait = False  # Default value
-        c.setOutput('wait', wait)
+        c.set_output('wait', wait)
 
     # Optional input: max_iterations
     if 'max_iterations' in inputs:
@@ -54,7 +54,7 @@ def handler(c):
         }
     else:
         max_iterations = 0  # Default value
-        c.setOutput('max_iterations', max_iterations)
+        c.set_output('max_iterations', max_iterations)
 
     # Query additional settings
     if do_query and questions:
@@ -63,16 +63,16 @@ def handler(c):
             questions=questions,
             allow_empty=True,
         ).run()
-        outputs = input_form.getOutputs()
+        outputs = input_form.get_outputs()
         if interval is None:
             interval = int(outputs['responses'].get('interval', 60))
-            c.setOutput('interval', interval)
+            c.set_output('interval', interval)
         if wait is None:
             wait = str(outputs['responses'].get('wait', False)) == 'True'
-            c.setOutput('wait', wait)
+            c.set_output('wait', wait)
         if max_iterations is None:
             max_iterations = int(outputs['responses'].get('max_iterations', 0))
-            c.setOutput('max_iterations', max_iterations)
+            c.set_output('max_iterations', max_iterations)
 
     # Loop
     iterations = 0
@@ -93,7 +93,7 @@ def handler(c):
             child.run()
             c.sleep(interval)
         else:
-            child.runAsync()
+            child.run_async()
             c.sleep_until(start + (iterations * interval))
 
     c.end('success', f'successfully started {iterations} iterations')

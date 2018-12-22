@@ -17,5 +17,5 @@ def handler(c):
     # Cloudomation platform
     files = c.list_dir('flows_from_git')
     # I set the output to the list of files
-    c.setOutput('git files', files)
+    c.set_output('git files', files)
     c.success(message='all done')

@@ -16,5 +16,5 @@ def handler(c):
         **creds
     ).run()  # run the task
     # provide the response back to the caller
-    c.setOutput('task out', task.getOutputs())
+    c.set_output('task out', task.get_outputs())
     c.end('success', message='all done')
