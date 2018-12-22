@@ -1,4 +1,4 @@
-import urllib.parses
+import urllib.parse
 import yaml
 
 
