@@ -1,10 +1,9 @@
-import urllib.parse
 import yaml
+import os
 
 
-def handler(c):
-    env_name = c.get_env_name()
-    inputs = c.get_inputs()
+def handler(system, this):
+    inputs = this.get('input_value')
     # this flow is registered as webhook, triggered by a commit to the
     # repository. The commit sha is passed in .data_json.commit_sha
     # when started manually, it will sync from master
@@ -13,10 +12,10 @@ def handler(c):
     except Exception:
         commit_sha = 'master'
     # read the connection information of the private repository
-    repo_info = c.setting('private git repo')
+    repo_info = system.setting('private git repo').get('value')
     # the git 'get' command ensures the content of the repository in a local
     # folder. it will clone or fetch and merge.
-    c.task(
+    this.task(
         'GIT',
         command='get',
         repository_url=repo_info['repository_url'],
@@ -25,43 +24,25 @@ def handler(c):
         ref=commit_sha,
     ).run()
     # list all flows from the repository
-    flows = c.list_dir('repo/flows', glob='**/*.py')
-    c.set_output('flows', flows)
-    for flow in flows:
-        content = c.file(f'repo/flows/{flow}')
-        name = flow[:-3]
-        urlname = urllib.parse.quote(name)
-        flow_dict = {
-            'name': name,
-            'script': content,
-        }
-        # update the flow script in cloudomation. the API will automatically
-        # fall back to POST (creating a record) when the record is not found.
-        c.task(
-            'REST',
-            url=f'https://{env_name}.cloudomation.io/api/1/flow/{urlname}',
-            method='PATCH',
-            json=flow_dict,
-            pass_user_token=True,
-        ).run_async()
-    settings = c.list_dir('repo/settings', '**/*.yaml')
-    c.set_output('settings', settings)
-    for setting in settings:
-        content_str = c.file(f'repo/settings/{setting}')
-        content = yaml.safe_load(content_str)
-        name = setting[:-5]
-        urlname = urllib.parse.quote(name)
-        setting_dict = {
-            'name': name,
-            'value': content,
-        }
-        # update the setting in cloudomation. the API will automatically
-        # fall back to POST (creating a record) when the record is not found.
-        c.task(
-            'REST',
-            url=f'https://{env_name}.cloudomation.io/api/1/setting/{urlname}',
-            method='PATCH',
-            json=setting_dict,
-            pass_user_token=True,
-        ).run_async()
-    c.success(message='all done')
+    # this call will return a list of File objects
+    files = system.files(dir='repo/flows', glob='**/*.py')
+    this.log(files=files)
+    for file in files:
+        # access the path field of the file object
+        path = file.get('path')
+        # ignore any subdirectory and extension
+        name, ext = os.path.splitext(os.path.basename(path))
+        # access the content of the file
+        content = file.get('content')
+        # create a new Flow object
+        system.flow(name=name, script=content)
+    # repeat the same for yaml files and Setting objects
+    files = system.files(dir='repo/settings', glob='**/*.yaml')
+    this.log(files=files)
+    for file in files:
+        path = file.get('path')
+        name, ext = os.path.splitext(os.path.basename(path))
+        content = file.get('content')
+        value = yaml.safe_load(content)
+        system.setting(name=name, value=value)
+    this.success('all done')

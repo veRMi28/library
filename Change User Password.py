@@ -6,9 +6,9 @@ to the cloudomation.io API.
 """
 
 
-def handler(c):
-    inputs = c.get_inputs()
-    user_name = inputs['user_name']
+def handler(system, this):
+    inputs = this.get('input_value')
+    user_name = inputs.get('user_name', 'nobody')
 
     # Query user details
     questions = {
@@ -25,17 +25,19 @@ def handler(c):
             'type': 'password',
         },
     }
-    execution = c.flow(
+    execution = this.flow(
         'Input Form',
         questions=questions,
-        protect_outputs=['responses']  # protect responses,
-                                       # they contain a password
+        init=dict(
+            protect_outputs=['responses']  # protect responses,
+                                           # they contain a password
+        ),
     ).run()
-    outputs = execution.get_outputs()
+    outputs = execution.get('output_value')
     resp = outputs['responses']
 
     if resp['new_password'] != resp['new_password_check']:
-        return c.error('passwords did not match')
+        return this.error('passwords did not match')
 
     patch = {
         'current_password': resp['current_password'],
@@ -43,15 +45,18 @@ def handler(c):
     }
 
     # Send change password request
-    instance = c.get_env_name()
+    instance = system.get_env_name()
     request = {
         'url': f'https://{instance}.cloudomation.io/api/1/user/{user_name}',
         'method': 'patch',
         'data': patch
     }
-    execution = c.task(
+    execution = this.task(
         'REST',
-        inputs=request,
+        input_value=request,
         pass_user_token=True,
-        protect_inputs=['data']
+        init=dict(
+            protect_inputs=['data']
+        ),
     ).run()
+    this.success('all done')

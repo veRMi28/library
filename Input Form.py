@@ -19,17 +19,14 @@ inputs:
 """
 
 
-from cloudomation import UnexpectedStatusOptions
-
-
-def handler(c):
+def handler(system, this):
     # Read and validate inputs
-    inputs = c.get_inputs()
+    inputs = this.get('input_value')
     try:
         questions = inputs['questions']
         assert type(questions) == dict
     except BaseException:
-        return c.error('missing or invalid input "questions"')
+        return this.error('missing or invalid input "questions"')
     timeout = inputs.get('timeout')
     allow_empty = inputs.get('allow_empty', False)
 
@@ -41,34 +38,32 @@ def handler(c):
         protect_outputs = None
         if request.get('type') == 'password':
             protect_outputs = ['response']
-        task = c.task(
+        task = this.task(
             'INPUT',
             name=field,
             reference=field,
             request=request['label'],
             timeout=timeout,
-            protect_outputs=protect_outputs,
+            init=dict(
+                protect_outputs=protect_outputs,
+            ),
             type=request.get('type', 'string'),
         ).run_async()
         tasks.append(task)
 
-    # wait for any of the tasks to finish
-    # read the response
-    # remove it from the list
+    # wait for all of the tasks to finish
+    this.wait_for(*tasks)
+
+    # read the responses
     responses = {}
-    while tasks:
-        if allow_empty:
-            task = c.wait_for(*tasks, unexpected=UnexpectedStatusOptions.IGNORE)
-        else:
-            task = c.wait_for(*tasks)
-        outputs = task.get_outputs()
+    for task in tasks:
+        outputs = task.get('output_value')
         field = outputs['reference']
         if not allow_empty and (not outputs or 'response' not in outputs):
-            return c.end('error', f'did not get a response for "{field}"')
+            return this.end('error', f'did not get a response for "{field}"')
         if 'response' in outputs:
             responses[field] = outputs['response']
-        tasks = [t for t in tasks if t.execution_id != task.execution_id]
 
     # all questions answerd, set the outputs
-    c.set_output('responses', responses)
-    c.end('success', 'all done')
+    this.save(output_value={'responses': responses})
+    this.success('all done')
