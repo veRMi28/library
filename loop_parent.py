@@ -26,10 +26,11 @@ crash and not process the rest of the list, unless you handle this properly
 (as showcased in this example).
 '''
 
-# (1) Define handler function for the Cloudomation class (c)
-def handler(c):
+# (1) Define handler function which receives the Cloudomation System
+# object (system) and an Execution object of this execution (this)
+def handler(system, this):
 
-# (2) Create a setting with country names
+    # (2) Create a setting with country names
     '''
     In a real-life application of this functionality, this setting would
     probably be created by another flow script, or be defined manually once.
@@ -38,15 +39,13 @@ def handler(c):
     Note that we create a setting that contains a list. Settings can contain
     any object that can be serialised into a yaml - lists, json etc.
     '''
-    if not c.setting('geonames_countrynames'):
-        c.setting(
-            'geonames_countrynames',
-            ["Austria", "Latvia", "Azerbaijan"]
-        )
+    geonames_countrynames = system.setting('geonames_countrynames')
+    if not geonames_countrynames.exists():
+        geonames_countrynames.save(value=["Austria", "Latvia", "Azerbaijan"])
 
-    countrynames = c.setting('geonames_countrynames')
+    countrynames = geonames_countrynames.get('value')
 
-# (3) Loop through the countries
+    # (3) Loop through the countries
     '''
     In order to get the information we want, we need to do several API calls.
     To speed this up, we parallelise the API calls by executing them in a
@@ -65,7 +64,7 @@ def handler(c):
         # We call the flow script that contains the REST calls with the c.flow
         # function. We store the execution object returned by the c.flow
         # function in the call variable.
-        call = c.flow(
+        call = this.flow(
             'loop_child',
             # I can add any number of parameters here. As long as they are not
             # called the same as the defined parameters for the flow function,
@@ -79,7 +78,7 @@ def handler(c):
             # execution, with the key weather and the value nice.
             # Note that I can also pass the same input as a dictionary with the
             # inputs parameter. The below line is equivalent to
-            # inputs = { 'countryname': countryname }
+            # input_value = { 'countryname': countryname }
             countryname = countryname
         # run_async() starts the child execution and then immediately returns.
         # This means that the for loop continues and the next child execution
@@ -88,18 +87,20 @@ def handler(c):
         # All execution objects are appended to the calls list.
         calls.append(call)
 
-# (4) Wait for all child executions to finish
+    # (4) Wait for all child executions to finish
+
     # Here, I tell the flow script to wait for all elements in the calls list
     # to finish before it continues. Remember that the calls list contains all
     # execution objects that we started in the for loop.
-    c.wait_for_all(*calls)
+    this.wait_for(*calls)
 
-# (5) Get outputs of child executions, and set outputs of parent execution
+    # (5) Get outputs of child executions, and set outputs of parent execution
+
     # Now, we take all the execution objects and get their outputs. Depending
     # on whether or not there was an error, we treat the results differently.
     for call in calls:
         # Get all outputs from all child executions
-        result = call.get_outputs()
+        result = call.get('output_value')
         # If there was an error, append the output of the erroneous execution
         # to our list of invalid country names.
         if 'error' in result:
@@ -107,17 +108,16 @@ def handler(c):
         # If there was no error, we directly set the output of the flow script
         # to the output of the child executions.
         else:
-            for k, v in result.items():
-                c.set_output(k, v)
+            this.log(result)
 
     # The errors need a bit more processing: here, we set an output that
     # contains the key "warning", information about the number of failed calls,
     # and the country names for which there was an error.
     if len(invalids) > 0:
-        c.set_output(
-            'warning',
-            f'no information was found for {len(invalids)} countries')
-        c.set_output('invalid countries', invalids)
+        this.log(
+            f'warning: no information was found for {len(invalids)} countries'
+        )
+        this.log(invalid_countries=invalids)
 
-# (6) Once we're done we end the execution.
-    c.success(message='all done')
+    # (6) Once we're done we end the execution.
+    this.success(message='all done')

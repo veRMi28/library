@@ -1,8 +1,8 @@
-def handler(c):
+def handler(system, this):
     # get AWS credentials from setting
-    creds = c.setting('aws creds')
+    credentials = system.setting('aws credentials').get('value')
     # create a child execution task which talks with AWS
-    task = c.task(
+    task = this.task(
         'AWS',
         region='eu-central-1',
         client='ec2',
@@ -13,8 +13,8 @@ def handler(c):
             'MaxCount': 1,
             'MinCount': 1,
         },
-        **creds
+        **credentials
     ).run()  # run the task
     # provide the response back to the caller
-    c.set_output('task out', task.get_outputs())
-    c.end('success', message='all done')
+    this.log(task.get('output_value'))
+    this.success('all done')

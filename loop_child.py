@@ -28,24 +28,27 @@ runs automatically, the input list is the only thing that will change from
 run to run so it is the most likely source of errors.
 '''
 
-# (1) Define handler function for the Cloudomation class (c)
-def handler(c):
+# (1) Define handler function which receives the Cloudomation System
+# object (system) and an Execution object of this execution (this)
+def handler(system, this):
 
-# (2) Set username for geonames API
-    if not c.setting('geonames_username'):
-        c.setting('geonames_username', 'demo')
+    # (2) Set username for geonames API
+    geonames_username = system.setting('geonames_username')
+    if not geonames_username.exists():
+        geonames_username.save(value='demo')
 
-    username = c.setting('geonames_username')
+    username = geonames_username.get('value')
 
-# (3) get inputs from parent execution
+    # (3) get inputs from parent execution
+
     # The parent execution passed inputs to this execution, therefore we
     # don't need to specify an execution ID from which to get the inputs.
     # c.get_inputs() will capture the inputs given by the parent execution.
-    countryname = c.get_inputs()['countryname']
+    countryname = this.get('input_value')['countryname']
 
-# (4) call the geonames API
+    # (4) call the geonames API
 
-    countrycode_response = c.task(
+    countrycode_response = this.task(
         'REST',
         url=(f'http://api.geonames.org/search?'
              f'name={countryname}&'
@@ -53,29 +56,27 @@ def handler(c):
              f'&type=JSON'
              f'&username={username}')
     ).run(
-    ).get_outputs(
-    )['json']['geonames']
+    ).get('output_value')['json']['geonames']
 
     # Check if the result contains something
     if not countrycode_response:
         # If it doesn't, we set the output to error and send back the
         # invalid country name
-        c.set_output('error', countryname)
+        this.log(error=countryname)
 
     else:
         # If there is a valid response, we continue with the API calls
         countrycode = countrycode_response[0]['countryCode']
-        capitalname = c.task(
+        capitalname = this.task(
             'REST',
             url=(f'http://api.geonames.org/countryInfo?'
                  f'country={countrycode}'
                  f'&type=JSON'
                  f'&username={username}')
         ).run(
-        ).get_outputs(
-        )['json']['geonames'][0]['capital']
+        ).get('output_value')['json']['geonames'][0]['capital']
 
-        capitalcoordinates_response = c.task(
+        capitalcoordinates_response = this.task(
             'REST',
             url=(f'http://api.geonames.org/search?'
                  f'name={capitalname}&'
@@ -83,8 +84,7 @@ def handler(c):
                  f'&type=JSON'
                  f'&username={username}')
         ).run(
-        ).get_outputs(
-        )['json']['geonames'][0]
+        ).get('output_value')['json']['geonames'][0]
 
         # The coordinates are two values. To access them by key in the json
         # which is returned by the geonames API, we need to loop through
@@ -97,8 +97,8 @@ def handler(c):
             in ('lat', 'lng')
         }
 
-# (5) Set outputs
-        c.set_output(capitalname, capitalcoordinates)
+        # (5) Set outputs
+        this.save(output_value={capitalname: capitalcoordinates})
 
-# (6) Once we're done we end the execution.
-    c.success(message='all done')
+    # (6) Once we're done we end the execution.
+    this.success(message='all done')

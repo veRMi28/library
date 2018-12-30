@@ -20,9 +20,9 @@ these limits.
 
 
 # (1) define handler function for the Cloudomation class (c)
-def handler(c):
+def handler(system, this):
 
-# (2) use settings
+    # (2) use settings
     '''
     To use the geonames REST API, it is required to register an application,
     which is identified via a user name that has to be provided with every
@@ -41,24 +41,26 @@ def handler(c):
     '''
 
     # we check if there is a setting with the key geonames_username
-    if c.setting('geonames_username') is None:
+    geonames_username = system.setting('geonames_username')
+    if not geonames_username.exists():
         # if the setting doesn't exist, we set it to the demo user name.
         # if it does exist, this line will be skipped.
-        c.setting('geonames_username', 'demo')
+        geonames_username.save(value='demo')
 
     # then we read out the value of the geonames_username setting
     # note that this is not related to the previous check. We need to read
     # the setting in any case, independent of whether it was set by the script,
     # or before the script was run
-    username = c.setting('geonames_username')
+    username = geonames_username.get('value')
 
-# (3) use INPUT task
+    # (3) use INPUT task
+
     # We want to provide the user with information about a country. We ask for
     # a country and explain what we are planning to do.
-    countryname_request = c.task(
+    countryname_request = this.task(
         'INPUT',
-         # the INPUT function has one required parameter: the request. This is
-         # what users will see and respond to.
+        # the INPUT function has one required parameter: the request. This is
+        # what users will see and respond to.
         request=(
             'This is a country information service. If you input a country '
             'name, I will tell you a few things about this country. Please '
@@ -74,20 +76,20 @@ def handler(c):
     # the execution, i.e. which task you ran.
 
     # we get the outputs and store them in a variable 'countryname_results'
-    countryname_result = countryname_request.get_outputs()
+    countryname_result = countryname_request.get('output_value')
 
     # because we want to learn about the INPUT task, we log all the outputs to
     # see what we get back. This is not required, we do this just for learning
     # purposes. Take a look at the log to see what the INPUT task returns.
-    c.logln('Outputs of the INPUT task:')
-    c.logln(countryname_result)
+    this.log('Outputs of the INPUT task:', countryname_result)
 
     # It returns a JSON element and we can access the individual elements with
     # standard Python syntax: we are only interested in the user's response,
     # which should be a country name. We store it in the variable 'countryname'.
     countryname = countryname_result['response']
 
-# (4) use REST task
+    # (4) use REST task
+
     '''
     Now, we want to get some information about the country. To request
     formation about a country, the geonames API requires the ISO-2 country code
@@ -100,7 +102,7 @@ def handler(c):
     # from a setting, and the country name from the user input. Then we execute
     # the REST task with .run(). Note that your can use standard python string
     # formatting functionality for defining the URL with parameters.
-    countrycode_request = c.task(
+    countrycode_request = this.task(
         'REST',
         url=(
             f'http://api.geonames.org/search?'
@@ -114,7 +116,7 @@ def handler(c):
     # execution object in a variable: countrycode_request
 
     # now we get the response returned from the REST call
-    countrycode_response = countrycode_request.get_outputs()
+    countrycode_response = countrycode_request.get('output_value')
 
     # First, we need to check if the REST call returned anything. If it didn't,
     # we will end the execution and inform the user. If it did, we continue.
@@ -122,8 +124,7 @@ def handler(c):
     # because we want to learn about the REST task, we log the response
     # returned by the REST call. Take a look at the log to see what is returend
     # by the REST call. It is again a JSON whose elements we can access.
-    c.logln('Outputs of the country code REST task:')
-    c.logln(countrycode_response)
+    this.log('Outputs of the country code REST task:', countrycode_response)
 
     # the geonames call returns the number of search results, which we access:
     response_count = countrycode_response['json']['totalResultsCount']
@@ -133,20 +134,18 @@ def handler(c):
         # if it is 0, we will end the execution and tell the user that we
         # coudn't find the country. If the REST call did return a result,
         # this line will be skipped and the script will continue.
-        return c.end(
-            'error',
-            message='We could not find the country you named.'
-        )
+        return this.error('We could not find the country you named.')
 
     # we access the country code. If you look at the response which we logged,
     # you will see that the JSON is nested so we need to go through a few
     # layers before we get to the country code.
     countrycode = countrycode_response['json']['geonames'][0]['countryCode']
 
-# (5) another REST task
+    # (5) another REST task
+
     # now that we have the country code, we want to get some information
     # about the country
-    countryinfo_request = c.task(
+    countryinfo_request = this.task(
         'REST',
         url=(
             f'http://api.geonames.org/countryInfo?'
@@ -157,19 +156,19 @@ def handler(c):
     ).run()
 
     # we get the ouput from the execution object
-    countryinfo_result = countryinfo_request.get_outputs()['json']['geonames'][0]
+    countryinfo_result = countryinfo_request.get('output_value')['json']['geonames'][0]
 
     # because we want to learn about the REST task, we log the response
     # returned by the REST call. Take a look at the log to see what is returend
     # by the REST call. It is again a JSON whose elements we can access.
-    c.logln('Outputs of the country information REST task:')
-    c.logln(countryinfo_result)
+    this.log('Outputs of the country information REST task:', countryinfo_result)
 
-# (6) give the user some information about the country and ask for  feedback
+    # (6) give the user some information about the country and ask for  feedback
+
     # now that we already saw how the INPUT task works, we chain it all
     # together, directly getting the output and not storing the execution
     # object in a separate variable.
-    user_feedback = c.task(
+    user_feedback = this.task(
         'INPUT',
         request=(f'Here is some information about  {countryname}. It is '
                  f'located in {countryinfo_result["continentName"]}, '
@@ -178,12 +177,12 @@ def handler(c):
                  f'and an area of {countryinfo_result["areaInSqKm"]} '
                  f'square kilometers. Did you like this information?')
         ).run(
-    ).get_outputs()['response']
+    ).get('output_value')['response']
 
-# (7) end execution
+    # (7) end execution
+
     # we add the user feedback to the end message
-    c.end(
-        'success',
+    this.success(
         message=(
             f'Country info provided. Did the user like the information? '
             f'{user_feedback}')

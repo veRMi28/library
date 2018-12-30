@@ -8,7 +8,7 @@ cloudomation.io API.
 """
 
 
-def handler(c):
+def handler(system, this):
     # Query user details
     questions = {
         'name': {
@@ -22,32 +22,36 @@ def handler(c):
             'type': 'password',
         },
     }
-    execution = c.flow(
+    execution = this.flow(
         'Input Form',
         questions=questions,
-        protect_outputs=['responses']  # protect responses,
-                                       # they contain a password
+        init=dict(
+            protect_outputs=['responses'],  # protect responses,
+                                            # they contain a password
+        ),
     ).run()
-    outputs = execution.get_outputs()
+    outputs = execution.get('output_value')
     user = outputs['responses']  # the responses dict is the user
 
     # Send user creation request
-    instance = c.get_env_name()
+    instance = system.get_env_name()
     request = {
         'url': f'https://{instance}.cloudomation.io/api/1/user',
         'method': 'post',
         'data': user
     }
-    execution = c.task(
+    execution = this.task(
         'REST',
-        inputs=request,
+        input_value=request,
         pass_user_token=True,
-        protect_inputs=['data']
+        init=dict(
+            protect_inputs=['data'],
+        ),
     ).run()
-    user_id = execution.get_outputs()['json']['id']
+    user_id = execution.get('output_value')['json']['id']
 
     # Success
-    c.log(
+    this.log(
         f'user "{user["name"]}" '
         f'with ID "{user_id}" '
         'was created successfully'

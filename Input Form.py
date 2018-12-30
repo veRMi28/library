@@ -18,6 +18,8 @@ inputs:
         default: False
 """
 
+import cloudomation as c
+
 
 def handler(system, this):
     # Read and validate inputs
@@ -35,32 +37,30 @@ def handler(system, this):
     for field, request in questions.items():
         if type(request) != dict:
             request = {'label': request}
-        protect_outputs = None
+        init = {}
         if request.get('type') == 'password':
-            protect_outputs = ['response']
+            init['protect_outputs'] = ['response']
         task = this.task(
             'INPUT',
             name=field,
             reference=field,
             request=request['label'],
             timeout=timeout,
-            init=dict(
-                protect_outputs=protect_outputs,
-            ),
+            init=init,
             type=request.get('type', 'string'),
         ).run_async()
         tasks.append(task)
 
     # wait for all of the tasks to finish
-    this.wait_for(*tasks)
+    this.wait_for(*tasks, return_when=c.return_when.ALL_ENDED)
 
     # read the responses
     responses = {}
     for task in tasks:
         outputs = task.get('output_value')
-        field = outputs['reference']
         if not allow_empty and (not outputs or 'response' not in outputs):
             return this.end('error', f'did not get a response for "{field}"')
+        field = outputs['reference']
         if 'response' in outputs:
             responses[field] = outputs['response']
 

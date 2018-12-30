@@ -1,6 +1,6 @@
-def handler(c):
+def handler(system, this):
     # create an SMPT task and run it
-    c.task(
+    this.task(
         'SMTP',
         inputs={
                 'from': 'cloudomation@cloudomation.io',
@@ -17,4 +17,4 @@ def handler(c):
         }
     ).run()
     # there are no outputs for the SMTP task
-    c.success(message='all done')
+    this.success(message='all done')

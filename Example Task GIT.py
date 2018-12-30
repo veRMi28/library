@@ -1,6 +1,6 @@
-def handler(c):
+def handler(system, this):
     # get the contents of a public github repository
-    c.task(
+    this.task(
         'GIT',
         command='get',
         # Specify the url of the repository - note that all files from that
@@ -15,7 +15,7 @@ def handler(c):
     ).run()
     # Listing the files I got from git in the repository I specified on the
     # Cloudomation platform
-    files = c.list_dir('flows_from_git')
+    files = system.files(dir='flows_from_git')
     # I set the output to the list of files
-    c.set_output('git files', files)
-    c.success(message='all done')
+    this.log('git files', files)
+    this.success(message='all done')

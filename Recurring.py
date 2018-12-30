@@ -1,24 +1,19 @@
 import time
 
 
-def handler(c):
-    # Required input: flow_name or flow_id
-    inputs = c.get_inputs()
+def handler(system, this):
+    # Required input: flow_name
+    inputs = this.get('input_value')
     try:
-        flow = inputs['flow_name']
-        assert type(flow) == str
-    except BaseException:
-        try:
-            flow = inputs['flow_id']
-            assert type(flow) == int
-        except BaseException:
-            return c.error('missing or invalid input "flow_name" or "flow_id"')
-    c.set_output('flow', flow)
+        flow_name = inputs['flow_name']
+    except Exception:
+        return this.error('missing input "flow_name"')
+    this.log(flow_name=flow_name)
 
     # Optional input: do_query
     do_query = str(inputs.get('do_query', False)) == 'True'
     questions = {}
-    c.set_output('do_query', do_query)
+    this.log(do_query=do_query)
 
     # Optional input: interval
     if 'interval' in inputs:
@@ -30,7 +25,7 @@ def handler(c):
         }
     else:
         interval = 60  # Default value
-        c.set_output('interval', interval)
+        this.log(interval=interval)
 
     # Optional input: wait
     if 'wait' in inputs:
@@ -42,7 +37,7 @@ def handler(c):
         }
     else:
         wait = False  # Default value
-        c.set_output('wait', wait)
+        this.log(wait=wait)
 
     # Optional input: max_iterations
     if 'max_iterations' in inputs:
@@ -54,46 +49,47 @@ def handler(c):
         }
     else:
         max_iterations = 0  # Default value
-        c.set_output('max_iterations', max_iterations)
+        this.log(max_iterations=max_iterations)
 
     # Query additional settings
     if do_query and questions:
-        input_form = c.flow(
+        input_form = this.flow(
             'Input Form',
             questions=questions,
             allow_empty=True,
         ).run()
-        outputs = input_form.get_outputs()
+        outputs = input_form.get('output_value')
         if interval is None:
             interval = int(outputs['responses'].get('interval', 60))
-            c.set_output('interval', interval)
+            this.log(interval=interval)
         if wait is None:
             wait = str(outputs['responses'].get('wait', False)) == 'True'
-            c.set_output('wait', wait)
+            this.log(wait=wait)
         if max_iterations is None:
             max_iterations = int(outputs['responses'].get('max_iterations', 0))
-            c.set_output('max_iterations', max_iterations)
+            this.log(max_iterations=max_iterations)
 
     # Loop
     iterations = 0
     start = time.time()
     while max_iterations == 0 or iterations < max_iterations:
         iterations += 1
+        this.save(message=f'iteration {iterations}/{max_iterations}')
         # Start child execution
         inputs = {
             'start': start,
             'iterations': iterations,
             'max_iterations': max_iterations,
         }
-        child = c.flow(
-            flow,
+        child = this.flow(
+            flow_name,
             inputs=inputs,
             name=f'iteration #{iterations}')
         if wait:
             child.run()
-            c.sleep(interval)
+            this.sleep(interval)
         else:
             child.run_async()
-            c.sleep_until(start + (iterations * interval))
+            this.sleep_until(start + (iterations * interval))
 
-    c.end('success', f'successfully started {iterations} iterations')
+    this.success(f'successfully started {iterations} iterations')

@@ -1,7 +1,7 @@
-def handler(c):
+def handler(system, this):
     # create a REST task and run it
-    task = c.task('REST', url='https://api.icndb.com/jokes/random').run()
+    task = this.task('REST', url='https://api.icndb.com/jokes/random').run()
     # access a field of the JSON response
-    joke = task.get_outputs()['json']['value']['joke']
+    joke = task.get('output_value')['json']['value']['joke']
     # end with a joke
-    c.end('success', message=joke)
+    this.success(message=joke)
