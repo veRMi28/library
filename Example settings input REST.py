@@ -1,44 +1,40 @@
-'''
-This flow script shows how the REST and INPUT tasks can be used together, by
-requesting parameters for a REST API call from a user.
-In this small example, a user is asked for a country name. The flow script then
-queries the REST API of the geonames service, which provides information about
-countries. The information about the country is then returned to the user, and
-the user is asked if they liked the information. Their response is captured in
-the end message of the flow script.
+# This flow script shows how the REST and INPUT tasks can be used together, by
+# requesting parameters for a REST API call from a user.
+# In this small example, a user is asked for a country name. The flow script
+# then queries the REST API of the geonames service, which provides information
+# about countries. The information about the country is then returned to the
+# user, and the user is asked if they liked the information. Their response is
+# captured in the end message of the flow script.
 
-This flow script call the geonames REST API to get information about a country.
-In order to use the geonames REST API, it is necessary to create a geonames
-account and enable it for the use of their webservices. They are free, but
-there are usage limits (very generous ones). If you are interested in using the
-geonames web services, you can register here: http://www.geonames.org/login and
-use your own account to execute this flow script. If not, we will use the demo
-user name provided by geonames for demo purposes only. Since this demo account
-also has usage limits, there is a chance that the flow script will fail due to
-these limits.
-'''
+# This flow script call the geonames REST API to get information about a
+# country. In order to use the geonames REST API, it is necessary to create a
+# geonames account and enable it for the use of their webservices. They are
+# free, but there are usage limits (very generous ones). If you are interested
+# in using the geonames web services, you can register here:
+# http://www.geonames.org/login and use your own account to execute this flow
+# script. If not, we will use the demo user name provided by geonames for demo
+# purposes only. Since this demo account also has usage limits, there is a
+# chance that the flow script will fail due to these limits.
 
 
 # (1) define handler function for the Cloudomation class (c)
 def handler(system, this):
 
-    # (2) use settings
-    '''
-    To use the geonames REST API, it is required to register an application,
-    which is identified via a user name that has to be provided with every
-    REST call. The best way to manage parameters like this is to store them
-    as Cloudomation settings. In this way, usernames can be changed easily in
-    the settings view without having to edit the flow scripts which use it.
-    For this example flow script, we will first check if the setting exists
-    and if it doesn't, we will create it and fill it with a demo user name.
-    This is not recommended best practice - the user name should not be hard
-    coded into the flow script. Another option would be to check if the
-    setting exists and if not, as the user to input a user name. However for
-    the purposes of this example flow script, we will create a setting that
-    contains the user name to demonstate how to use settings.
-    NOTE that settings are not intended for passwords or other sensible
-    information. For passwords, we recommend the use of Hashicorp Vault.
-    '''
+# (2) use settings
+    # To use the geonames REST API, it is required to register an application,
+    # which is identified via a user name that has to be provided with every
+    # REST call. The best way to manage parameters like this is to store them
+    # as Cloudomation settings. In this way, usernames can be changed easily in
+    # the settings view without having to edit the flow scripts which use it.
+    # For this example flow script, we will first check if the setting exists
+    # and if it doesn't, we will create it and fill it with a demo user name.
+    # This is not recommended best practice - the user name should not be hard
+    # coded into the flow script. Another option would be to check if the
+    # setting exists and if not, as the user to input a user name. However for
+    # the purposes of this example flow script, we will create a setting that
+    # contains the user name to demonstate how to use settings.
+    # NOTE that settings are not intended for passwords or other sensible
+    # information. For passwords, we recommend the use of Hashicorp Vault.
 
     # we check if there is a setting with the key geonames_username
     geonames_username = system.setting('geonames_username')
@@ -89,14 +85,12 @@ def handler(system, this):
     countryname = countryname_result['response']
 
     # (4) use REST task
-
-    '''
-    Now, we want to get some information about the country. To request
-    formation about a country, the geonames API requires the ISO-2 country code
-    of that country, so our first request will be to get the ISO-2 country code
-    for the country name. This is also an opportunity for us to see if the user
-    input a valid country name - if they didn't, this request will fail.
-    '''
+    # Now, we want to get some information about the country. To request
+    # information about a country, the geonames API requires the ISO-2 country
+    # code of that country, so our first request will be to get the ISO-2
+    # country code for the country name. This is also an opportunity for us to
+    # see if the user input a valid country name - if they didn't, this request
+    # will fail.
 
     # Here, we use the two previously defined paramenters: the username we read
     # from a setting, and the country name from the user input. Then we execute
