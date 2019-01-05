@@ -18,8 +18,6 @@ inputs:
         default: False
 """
 
-import cloudomation as c
-
 
 def handler(system, this):
     # Read and validate inputs
@@ -52,7 +50,7 @@ def handler(system, this):
         tasks.append(task)
 
     # wait for all of the tasks to finish
-    this.wait_for(*tasks, return_when=c.return_when.ALL_ENDED)
+    this.wait_for(*tasks, return_when=system.return_when.ALL_ENDED)
 
     # read the responses
     responses = {}
