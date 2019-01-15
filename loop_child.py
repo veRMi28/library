@@ -60,7 +60,7 @@ def handler(system, this):
     if not countrycode_response:
         # If it doesn't, we set the output to error and send back the
         # invalid country name
-        this.log(error=countryname)
+        this.save(output_value={'error': countryname})
 
     else:
         # If there is a valid response, we continue with the API calls
