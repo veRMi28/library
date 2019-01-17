@@ -8,7 +8,7 @@ def handler(system, this):
     ).run()
 
     if github_account_exists.get('output_value')['response'] == 'n':
-        github_account_create = this.task(
+        this.task(
             'INPUT',
             request=(
                 'Please go to https://github.com/join and create an account.'
