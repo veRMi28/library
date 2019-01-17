@@ -92,7 +92,7 @@ def handler(system, this):
             ).run()
             private_repo = private_repo_request.get('output_value')['response']
 
-            homepage = (
+            repo_url = (
                 f'https://github.com/{github_username}/{github_repo_name}'
             )
 
@@ -103,7 +103,7 @@ def handler(system, this):
                 data={
                     'name': github_repo_name,
                     'description': github_repo_description,
-                    'homepage': homepage,
+                    'homepage': repo_url,
                     'private': private_repo,
                     'has_issues': 'true',
                     'has_projects': 'true',
@@ -116,7 +116,7 @@ def handler(system, this):
             ).run()
             this.log(
                 f'Github repository created successfully. '
-                f'Check it out here: {homepage}'
+                f'Check it out here: {repo_url}'
             )
 
         else:
@@ -142,7 +142,8 @@ def handler(system, this):
     github_info = {
         'github_username': github_username,
         'github_repo_name': github_repo_name,
-        'github_token': github_token
+        'github_token': github_token,
+        'repo_url': repo_url
     }
 
     system.setting(name='github_info', value=github_info)
