@@ -1,3 +1,24 @@
+# This flow script requests information about your github repository and
+# guides you through the process of setting up a repository, if you want. It
+# will store all information about your github repository in a setting called
+# "github_info". This setting can then be used by other flow scripts that
+# interact with your github repository.
+
+# You can run it manually to create a github repo, or use it together with
+# another flow script called configure_webhooks_github_cloudomation to set
+# up a webhook on Cloudomation and github which will synchronise your flow
+# scripts and settings automatically from your github repository with
+# Cloudomation whenever there is a push to the repository.
+
+# For the actually synchronisation of flow scripts, once your webhook is set
+# up, you need a third flow script: sync_from_github. All are available in
+# the public flow script library.
+
+# For this process to work, you need the following three flow scripts:
+# 1. configure_webhoooks_github_cloudomation
+# 2. request_github_info (this one)
+# 3. sync_from_github
+
 def handler(system, this):
 
     github_account_exists = this.task(
