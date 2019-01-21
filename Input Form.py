@@ -25,7 +25,7 @@ def handler(system, this):
     try:
         questions = inputs['questions']
         assert type(questions) == dict
-    except BaseException:
+    except Exception:
         return this.error('missing or invalid input "questions"')
     timeout = inputs.get('timeout')
     allow_empty = inputs.get('allow_empty', False)
