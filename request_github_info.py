@@ -10,7 +10,7 @@
 # scripts and settings automatically from your github repository with
 # Cloudomation whenever there is a push to the repository.
 
-# For the actually synchronisation of flow scripts, once your webhook is set
+# For the actual synchronisation of flow scripts, once your webhook is set
 # up, you need a third flow script: sync_from_github. All are available in
 # the public flow script library.
 
@@ -150,6 +150,15 @@ def handler(system, this):
                 timeout=0.2
             ).run()
 
+        github_info = {
+            'github_username': github_username,
+            'github_repo_name': github_repo_name,
+            'github_token': github_token
+        }
+
+        system.setting(name='github_info', value=github_info)
+        this.set_output('github_info', github_info)
+
     else:
         this.task(
             'INPUT',
@@ -159,14 +168,5 @@ def handler(system, this):
             ),
             timeout=0.2
         ).run()
-
-    github_info = {
-        'github_username': github_username,
-        'github_repo_name': github_repo_name,
-        'github_token': github_token
-    }
-
-    system.setting(name='github_info', value=github_info)
-    this.set_output('github_info', github_info)
 
     return this.success('All done.')
