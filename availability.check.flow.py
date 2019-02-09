@@ -19,7 +19,7 @@ def handler(system, this):
     # start a script execution via the rest api
     script = textwrap.dedent('''
         def handler(system, this):
-            return this.error('done')
+            return this.success('done')
         ''')
     check_task = this.task(
         'REST',
