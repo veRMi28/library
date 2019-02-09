@@ -22,6 +22,11 @@
 # "sync_from_github". Guess what: it's also available in the public flow script
 # library.
 
+# For this process to work, you need the following three flow scripts:
+# 1. configure_webhoooks_github_cloudomation (this one)
+# 2. request_github_info
+# 3. sync_from_github
+
 # Enjoy :)
 
 
