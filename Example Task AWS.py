@@ -199,10 +199,7 @@ def handler(system, this):
 
         # read console output to find host key
         # the call might return without an actual output, we have to loop until we receive an actual output
-        get_console_output = None
         while True:
-            if get_console_output:
-                get_console_output.delete()
             get_console_output = aws_template.clone(
                 name='get console output',
                 client='ec2',
@@ -257,49 +254,62 @@ def handler(system, this):
         this.save(message='cleaning up')
 
         if instance_id:
-            # remove instance
-            aws_template.clone(
-                name='terminate instance',
-                client='ec2',
-                service='terminate_instances',
-                parameters={
-                    'InstanceIds': [instance_id],
-                },
-                run=True,
-            )
-            # wait for instance to be terminated
-            aws_template.clone(
-                name='wait for instance terminated',
-                client='ec2',
-                waiter='instance_terminated',
-                parameters={
-                    'InstanceIds': [instance_id],
-                },
-                run=True,
-            )
+            try:
+                # remove instance
+                aws_template.clone(
+                    name='terminate instance',
+                    client='ec2',
+                    service='terminate_instances',
+                    parameters={
+                        'InstanceIds': [instance_id],
+                    },
+                    run=True,
+                )
+            except Exception as ex:
+                this.log(f'failed to remove instance: {str(ex)}')
+
+            try:
+                # wait for instance to be terminated
+                aws_template.clone(
+                    name='wait for instance terminated',
+                    client='ec2',
+                    waiter='instance_terminated',
+                    parameters={
+                        'InstanceIds': [instance_id],
+                    },
+                    run=True,
+                )
+            except Exception as ex:
+                this.log(f'failed to wait for instance to be terminated: {str(ex)}')
 
         if key_name:
-            # remove key pair
-            aws_template.clone(
-                name='delete key pair',
-                client='ec2',
-                service='delete_key_pair',
-                parameters={
-                    'KeyName': key_name,
-                },
-                run=True,
-            )
+            try:
+                # remove key pair
+                aws_template.clone(
+                    name='delete key pair',
+                    client='ec2',
+                    service='delete_key_pair',
+                    parameters={
+                        'KeyName': key_name,
+                    },
+                    run=True,
+                )
+            except Exception as ex:
+                this.log(f'failed to delete key pair: {str(ex)}')
 
         if clean_security_group and security_group_id:
             # remove security group
-            aws_template.clone(
-                name='delete security group',
-                client='ec2',
-                service='delete_security_group',
-                parameters={
-                    'GroupId': security_group_id,
-                },
-                run=True,
-            )
+            try:
+                aws_template.clone(
+                    name='delete security group',
+                    client='ec2',
+                    service='delete_security_group',
+                    parameters={
+                        'GroupId': security_group_id,
+                    },
+                    run=True,
+                )
+            except Exception as ex:
+                this.log(f'failed to delete security group: {str(ex)}')
 
     return this.success('all done')
