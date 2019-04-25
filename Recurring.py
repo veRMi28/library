@@ -84,12 +84,20 @@ def handler(system, this):
         child = this.flow(
             flow_name,
             inputs=inputs,
-            name=f'iteration #{iterations}')
+            name=f'{flow_name} iteration #{iterations}',
+        )
         if wait:
-            child.run()
-            this.sleep(interval)
+            try:
+                child.run()
+            except Exception:
+                this.log(f'iteration #{iterations} failed')
         else:
             child.run_async()
+        if max_iterations != 0 and iterations >= max_iterations:
+            break
+        if wait:
+            this.sleep(interval)
+        else:
             this.sleep_until(start + (iterations * interval))
 
-    this.success(f'successfully started {iterations} iterations')
+    return this.success(f'started {iterations} iterations')
