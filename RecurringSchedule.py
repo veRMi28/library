@@ -21,10 +21,10 @@ def handler(system, this):
     elif do_query:
         scheduled_at = None
         questions['scheduled_at'] = {
-            'label': 'Time when the child execution should be started [08:30]',
+            'label': 'Time when the child execution should be started [08:30+02:00]',
         }
     else:
-        scheduled_at = '08:30'  # Default value
+        scheduled_at = '08:30+02:00'  # Default value
         this.log(scheduled_at=scheduled_at)
 
     # Optional input: max_iterations
@@ -48,7 +48,7 @@ def handler(system, this):
         ).run()
         outputs = input_form.get('output_value')
         if scheduled_at is None:
-            scheduled_at = int(outputs['responses'].get('scheduled_at', '08:30'))
+            scheduled_at = outputs['responses'].get('scheduled_at', '08:30+02:00')
             this.log(scheduled_at=scheduled_at)
         if max_iterations is None:
             max_iterations = int(outputs['responses'].get('max_iterations', 0))
