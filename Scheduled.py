@@ -1,4 +1,4 @@
-import time
+import datetime
 
 
 def handler(system, this):
@@ -12,68 +12,88 @@ def handler(system, this):
 
     # Optional input: do_query
     do_query = str(inputs.get('do_query', False)) == 'True'
+    questions = {}
     this.log(do_query=do_query)
 
-    # Optional input: use
-    default_use = 'delay'
-    if 'use' in inputs:
-        use = inputs['use']
+    # Optional input: interval
+    if 'scheduled_at' in inputs:
+        scheduled_at = inputs['scheduled_at']
     elif do_query:
-        use = this.task(
-            'INPUT',
-            request=f'Use "timestamp" or "delay" [{default_use}]',
+        scheduled_at = None
+        questions['scheduled_at'] = {
+            'label': 'Time when the child execution should be started [08:30+02:00]',
+        }
+    else:
+        scheduled_at = '08:30+02:00'  # Default value
+        this.log(scheduled_at=scheduled_at)
+
+    # Optional input: max_iterations
+    if 'max_iterations' in inputs:
+        max_iterations = int(inputs['max_iterations'])
+    elif do_query:
+        max_iterations = None
+        questions['max_iterations'] = {
+            'label': 'Maximum number of iterations. 0=no limit [0]',
+        }
+    else:
+        max_iterations = 0  # Default value
+        this.log(max_iterations=max_iterations)
+
+    # Query additional settings
+    if do_query and questions:
+        input_form = this.flow(
+            'Input Form',
+            questions=questions,
+            allow_empty=True,
+        ).run()
+        outputs = input_form.get('output_value')
+        if scheduled_at is None:
+            scheduled_at = outputs['responses'].get('scheduled_at', '08:30+02:00')
+            this.log(scheduled_at=scheduled_at)
+        if max_iterations is None:
+            max_iterations = int(outputs['responses'].get('max_iterations', 0))
+            this.log(max_iterations=max_iterations)
+
+    # CLOUD-1621 TODO: convert to user's timezone
+    # currently timezone info must be passed in the `scheduled_at` string:
+    # e.g. "16:30+02:00"
+    scheduled_at_t = datetime.time.fromisoformat(scheduled_at)
+    this.log(scheduled_at_t=scheduled_at_t)
+    iterations = 0
+    start = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    while max_iterations == 0 or iterations < max_iterations:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        this.log(now=now)
+        today = now.date()
+        this.log(today=today)
+        scheduled = datetime.datetime.combine(today, scheduled_at_t)
+        this.log(scheduled=scheduled)
+        if scheduled < now:  # next iteration tomorrow
+            tomorrow = today + datetime.timedelta(days=1)
+            scheduled = datetime.datetime.combine(tomorrow, scheduled_at_t)
+            this.log(scheduled=scheduled)
+        scheduled_ts = scheduled.isoformat(sep=' ', timespec='minutes')
+        this.log(scheduled_ts=scheduled_ts)
+        delta_sec = (scheduled - now).total_seconds()
+        this.log(delta_sec=delta_sec)
+        this.save(message=f'sleeping until {scheduled_ts}')
+        this.sleep(delta_sec)
+        iterations += 1
+        this.save(message=f'iteration {iterations}/{max_iterations}')
+        # Start child execution
+        inputs = {
+            'start': start,
+            'iterations': iterations,
+            'max_iterations': max_iterations,
+        }
+        this.flow(
+            flow_name,
+            inputs=inputs,
+            name=f'{flow_name} iteration #{iterations}',
             run=True,
-        ).get('output_value').get('response', default_use)
-    else:
-        use = default_use
-        this.log(use=use)
+            wait=False,
+        )
+        if max_iterations != 0 and iterations >= max_iterations:
+            break
 
-    if use == 'timestamp':
-        # Optional input: timestamp
-        default_timestamp = int(time.time()) + 60
-        if 'timestamp' in inputs:
-            timestamp = int(inputs['timestamp'])
-        elif do_query:
-            timestamp = this.task(
-                'INPUT',
-                request=f'Unix timestamp when the flow should be started [{default_timestamp}]',
-                run=True,
-            ).get('output_value').get('response', default_timestamp)
-        else:
-            timestamp = default_timestamp  # Default value
-            this.log(timestamp=timestamp)
-    elif use == 'delay':
-        # Optional input: delay
-        default_delay = 60
-        if 'delay' in inputs:
-            delay = int(inputs['delay'])
-        elif do_query:
-            delay = this.task(
-                'INPUT',
-                request=f'Delay in seconds after which the flow should be started [{default_delay}]',
-                run=True,
-            ).get('output_value').get('response', default_delay)
-        else:
-            delay = default_delay  # Default value
-            this.log(delay=delay)
-
-    if use == 'timestamp':
-        this.save(message=f'sleeping until {timestamp}')
-        this.log(f'sleeping until {timestamp}')
-        this.sleep_until(timestamp)
-    elif use == 'delay':
-        this.save(message=f'sleeping for {delay} seconds')
-        this.log(f'sleeping for {delay} seconds')
-        this.sleep(delay)
-    else:
-        return this.error(f'Invalid value for "use": "{use}"')
-
-    this.flow(
-        flow_name,
-        inputs=inputs,
-        name=f'scheduled {flow_name}',
-        run=True,
-        wait=False,
-    )
-
-    return this.success(f'successfully started {flow_name}')
+    return this.success(f'started {iterations} iterations')
