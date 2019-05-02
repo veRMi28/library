@@ -1,4 +1,5 @@
 import datetime
+import re
 
 
 def handler(system, this):
@@ -24,7 +25,7 @@ def handler(system, this):
             'label': 'Time when the child execution should be started [08:30+02:00]',
         }
     else:
-        scheduled_at = '08:30+02:00'  # Default value
+        scheduled_at = '08:30'  # Default value
         this.log(scheduled_at=scheduled_at)
 
     # Optional input: max_iterations
@@ -48,15 +49,21 @@ def handler(system, this):
         ).run()
         outputs = input_form.get('output_value')
         if scheduled_at is None:
-            scheduled_at = outputs['responses'].get('scheduled_at', '08:30+02:00')
+            scheduled_at = outputs['responses'].get('scheduled_at', '08:30')
             this.log(scheduled_at=scheduled_at)
         if max_iterations is None:
             max_iterations = int(outputs['responses'].get('max_iterations', 0))
             this.log(max_iterations=max_iterations)
 
     # CLOUD-1621 TODO: convert to user's timezone
-    # currently timezone info must be passed in the `scheduled_at` string:
-    # e.g. "16:30+02:00"
+    # currently timezone info can be passed in the `scheduled_at` string:
+    # e.g. "16:30+02:00". If no timezone is passed UTC is assumed.
+    if re.match(r'\d\d:\d\d\+\d\d:\d\d', scheduled_at):
+        pass
+    elif re.match(r'\d\d:\d\d', scheduled_at):
+        scheduled_at = f'{scheduled_at}:+00:00'
+    else:
+        return this.error('invalid format for scheduled_at. must be HH:MM (without timezone offset, assumed UTC) or HH:MM+ZZ:ZZ (with timezone offset)')
     scheduled_at_t = datetime.time.fromisoformat(scheduled_at)
     this.log(scheduled_at_t=scheduled_at_t)
     iterations = 0
