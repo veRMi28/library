@@ -2,7 +2,7 @@
 This flow script changes the password of an user.
 
 It queries the current and new password and sends a PATCH request
-to the cloudomation.io API.
+to the cloudomation.com API.
 """
 
 
@@ -47,7 +47,7 @@ def handler(system, this):
     # Send change password request
     instance = system.get_env_name()
     request = {
-        'url': f'https://{instance}.cloudomation.io/api/1/user/{user_name}',
+        'url': f'https://{instance}.cloudomation.com/api/1/user/{user_name}',
         'method': 'patch',
         'data': patch
     }
