@@ -3,13 +3,13 @@ def handler(system, this):
     this.task(
         'SMTP',
         inputs={
-                'from': 'cloudomation@cloudomation.io',
-                'to': 'info@cloudomation.io',
+                'from': 'cloudomation@cloudomation.com',
+                'to': 'info@cloudomation.com',
                 'subject': 'Cloudomation email',
                 # the text will be the email body. Alternatively you could add
                 # a html formatted body with the key 'html'.
                 'text': 'This email was sent with Cloudomation',
-                'login': 'cloudomation@cloudomation.io',
+                'login': 'cloudomation@cloudomation.com',
                 'password': '****',
                 'smtp_host': 'SMTP.example.com',
                 'smtp_port': 587,

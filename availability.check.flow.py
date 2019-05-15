@@ -23,7 +23,7 @@ def handler(system, this):
         ''')
     check_task = this.task(
         'REST',
-        url=f'https://{env_name}.cloudomation.io/api/1/execution',
+        url=f'https://{env_name}.cloudomation.com/api/1/execution',
         method='POST',
         json={
             'script': script,
