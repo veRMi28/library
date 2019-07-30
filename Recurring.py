@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 
 
 def handler(system, this):
@@ -74,7 +75,10 @@ def handler(system, this):
     start = time.time()
     while max_iterations == 0 or iterations < max_iterations:
         iterations += 1
-        this.save(message=f'iteration {iterations}/{max_iterations}')
+        if max_iterations:
+            this.save(message=f'iteration {iterations}/{max_iterations}')
+        else:
+            this.save(message=f'iteration {iterations}')
         # Start child execution
         inputs = {
             'start': start,
@@ -95,6 +99,13 @@ def handler(system, this):
             child.run_async()
         if max_iterations != 0 and iterations >= max_iterations:
             break
+        if wait:
+            now = time.time()
+            scheduled = datetime.fromtimestamp(now + interval, timezone.utc)
+        else:
+            scheduled = datetime.fromtimestamp(start + (iterations * interval), timezone.utc)
+        scheduled_ts = scheduled.isoformat(sep=' ', timespec='minutes')
+        this.save(message=f'sleeping until {scheduled_ts}')
         if wait:
             this.sleep(interval)
         else:
