@@ -22,7 +22,6 @@ def handler(system, this):
         use = this.task(
             'INPUT',
             request=f'Use "timestamp" or "delay" [{default_use}]',
-            run=True,
         ).get('output_value').get('response', default_use)
     else:
         use = default_use
@@ -37,7 +36,6 @@ def handler(system, this):
             timestamp = this.task(
                 'INPUT',
                 request=f'Unix timestamp when the flow should be started [{default_timestamp}]',
-                run=True,
             ).get('output_value').get('response', default_timestamp)
         else:
             timestamp = default_timestamp  # Default value
@@ -51,7 +49,6 @@ def handler(system, this):
             delay = this.task(
                 'INPUT',
                 request=f'Delay in seconds after which the flow should be started [{default_delay}]',
-                run=True,
             ).get('output_value').get('response', default_delay)
         else:
             delay = default_delay  # Default value
@@ -72,7 +69,6 @@ def handler(system, this):
         flow_name,
         inputs=inputs,
         name=f'delayed {flow_name}',
-        run=True,
         wait=False,
     )
 

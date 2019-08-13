@@ -46,7 +46,7 @@ def handler(system, this):
             'Input Form',
             questions=questions,
             allow_empty=True,
-        ).run()
+        )
         outputs = input_form.get('output_value')
         if scheduled_at is None:
             scheduled_at = outputs['responses'].get('scheduled_at', '08:30')
@@ -97,7 +97,6 @@ def handler(system, this):
             flow_name,
             inputs=inputs,
             name=f'{flow_name} iteration #{iterations}',
-            run=True,
             wait=False,
         )
         if max_iterations != 0 and iterations >= max_iterations:

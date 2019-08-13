@@ -15,6 +15,6 @@ def handler(system, this):
                 'smtp_port': 587,
                 'use_tls': True
         }
-    ).run()
+    )
     # there are no outputs for the SMTP task
     this.success(message='all done')

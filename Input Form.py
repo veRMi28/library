@@ -46,6 +46,7 @@ def handler(system, this):
             timeout=timeout,
             init=init,
             type=request.get('type', 'string'),
+            run=False,
         ).run_async()
         tasks.append(task)
 

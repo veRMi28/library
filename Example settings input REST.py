@@ -63,8 +63,7 @@ def handler(system, this):
             'only type one country at a time. Which country would you like '
             'to learn about?'
         )
-    # after defining the INPUT task, we directly execute it with .run()
-    ).run()
+    )
     # now, the variable countryname_request contains the *execution object*
     # of the input task. From the execution object, we can get e.g. its ID,
     # its status, its runtime etc. - and most importantly, its outputs.
@@ -93,9 +92,9 @@ def handler(system, this):
     # will fail.
 
     # Here, we use the two previously defined paramenters: the username we read
-    # from a setting, and the country name from the user input. Then we execute
-    # the REST task with .run(). Note that your can use standard python string
-    # formatting functionality for defining the URL with parameters.
+    # from a setting, and the country name from the user input. Note that you
+    # can use standard python string formatting functionality for defining the
+    # URL with parameters.
     countrycode_request = this.task(
         'REST',
         url=(
@@ -105,7 +104,7 @@ def handler(system, this):
             f'&type=JSON'
             f'&username={username}'
         )
-    ).run()
+    )
     # again, we execute the REST task right away and store the resulting
     # execution object in a variable: countrycode_request
 
@@ -147,7 +146,7 @@ def handler(system, this):
             f'&type=JSON'
             f'&username={username}'
         )
-    ).run()
+    )
 
     # we get the ouput from the execution object
     countryinfo_result = countryinfo_request.get('output_value')['json']['geonames'][0]

@@ -1,6 +1,6 @@
 def handler(system, this):
     # create a task to request input from a user and run it
-    task = this.task('INPUT', request='please enter a number').run()
+    task = this.task('INPUT', request='please enter a number')
     # access the response
     response = task.get('output_value')['response']
     try:

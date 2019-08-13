@@ -19,7 +19,7 @@ def handler(system, this):
             #OUTPUT_VAR(CPU)
             '''
         ),
-    ).run()
+    )
 
     outputs = info_task.get('output_value')
     hostname = outputs['var']['HOSTNAME']
@@ -41,7 +41,7 @@ def handler(system, this):
             #OUTPUT_VAR(UPTIME)
             '''
         ),
-    ).run()
+    )
 
     outputs = uptime_task.get('output_value')
     uptime = outputs['var']['UPTIME']

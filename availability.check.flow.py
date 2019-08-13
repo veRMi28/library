@@ -31,7 +31,6 @@ def handler(system, this):
         },
         pass_user_token=True,
         name='availability.check.task',
-        run=True,
         wait=system.return_when.ALL_ENDED,
     )
     check_task_status, check_task_message = check_task.load('status', 'message')

@@ -32,7 +32,7 @@ def handler(system, this):
             protect_outputs=['responses']  # protect responses,
                                            # they contain a password
         ),
-    ).run()
+    )
     outputs = execution.get('output_value')
     resp = outputs['responses']
 
@@ -58,5 +58,5 @@ def handler(system, this):
         init=dict(
             protect_inputs=['data']
         ),
-    ).run()
+    )
     this.success('all done')

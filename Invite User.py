@@ -20,7 +20,6 @@ def handler(system, this):
     responses = this.flow(
         'Input Form',
         questions=questions,
-        run=True,
     ).get('output_value')['responses']
 
     # Create user object

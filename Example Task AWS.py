@@ -65,7 +65,6 @@ def handler(system, this):
                         'Values': ['true'],
                     }],
                 },
-                run=True,
                 wait=False,
             )
 
@@ -79,7 +78,6 @@ def handler(system, this):
                     '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
                 ],
             },
-            run=True,
             wait=False,
         )
 
@@ -96,7 +94,6 @@ def handler(system, this):
                     'result',
                 ],
             },
-            run=True,
             wait=False,
         )
 
@@ -118,7 +115,6 @@ def handler(system, this):
                     'GroupName': f'{name}-security-group',
                     'VpcId': vpc_id,
                 },
-                run=True,
             ).get('output_value')
             security_group_id = create_security_group_outputs['result']['GroupId']
             this.log(security_group_id=security_group_id)
@@ -136,7 +132,6 @@ def handler(system, this):
                     'GroupId': security_group_id,
                     'IpProtocol': 'tcp',
                 },
-                run=True,
             )
 
         # wait for both, get_parameters and create_key_pair tasks to end
@@ -164,7 +159,6 @@ def handler(system, this):
                 'KeyName': key_name,
                 'SecurityGroupIds': [security_group_id],
             },
-            run=True,
         ).get('output_value')
         instance_id = run_instance_outputs['result']['Instances'][0]['InstanceId']
         this.log(instance_id=instance_id)
@@ -179,7 +173,6 @@ def handler(system, this):
                     instance_id,
                 ]
             },
-            run=True,
         )
 
         # read public IP of instance
@@ -192,7 +185,6 @@ def handler(system, this):
                     instance_id,
                 ]
             },
-            run=True,
         ).get('output_value')
         public_ip = describe_instances_outputs['result']['Reservations'][0]['Instances'][0]['PublicIpAddress']
         this.log(public_ip=public_ip)
@@ -207,7 +199,6 @@ def handler(system, this):
                 parameters={
                     'InstanceId': instance_id,
                 },
-                run=True,
             )
             get_console_output_outputs = get_console_output.get('output_value')
             console = get_console_output_outputs['result'].get('Output')
@@ -243,7 +234,6 @@ def handler(system, this):
                 uname -a
                 '''
             ),
-            run=True,
         )
 
     # clean up
@@ -263,7 +253,6 @@ def handler(system, this):
                     parameters={
                         'InstanceIds': [instance_id],
                     },
-                    run=True,
                 )
             except Exception as ex:
                 this.log(f'failed to remove instance: {str(ex)}')
@@ -277,7 +266,6 @@ def handler(system, this):
                     parameters={
                         'InstanceIds': [instance_id],
                     },
-                    run=True,
                 )
             except Exception as ex:
                 this.log(f'failed to wait for instance to be terminated: {str(ex)}')
@@ -292,7 +280,6 @@ def handler(system, this):
                     parameters={
                         'KeyName': key_name,
                     },
-                    run=True,
                 )
             except Exception as ex:
                 this.log(f'failed to delete key pair: {str(ex)}')
@@ -307,7 +294,6 @@ def handler(system, this):
                     parameters={
                         'GroupId': security_group_id,
                     },
-                    run=True,
                 )
             except Exception as ex:
                 this.log(f'failed to delete security group: {str(ex)}')

@@ -44,7 +44,7 @@ def handler(system, this):
                 'Please specify an authorization key for the Cloudomation '
                 'webhook. Can be any alphanumeric string.'
             )
-        ).run()
+        )
         c_webhook_key = c_webhook_key_request.get('output_value')['response']
 
         cloudomation_username = this.get('user_name')
@@ -67,7 +67,7 @@ def handler(system, this):
     # check if github info setting exists
     # if it doesn't, start the flow script to request the info from the user
     if not system.setting('github_info').exists():
-        this.flow('request_github_info').run()
+        this.flow('request_github_info')
 
     github_info = system.setting('github_info').load('value')
     github_username = github_info['github_username']
@@ -89,7 +89,7 @@ def handler(system, this):
         headers={
             'Authorization': f'token {github_token}'
         },
-    ).run()
+    )
 
     # we get the response
     github_list_webhook = list_github_webhooks.get('output_value')['json']
@@ -130,7 +130,7 @@ def handler(system, this):
             headers={
                 'Authorization': f'token {github_token}'
             },
-        ).run()
+        )
         this.set_output('webhook_created', 'true')
 
     return this.success('All done - Cloudomation and github webhooks set up.')

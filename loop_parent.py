@@ -74,7 +74,8 @@ def handler(system, this):
             # Note that I can also pass the same input as a dictionary with the
             # inputs parameter. The below line is equivalent to
             # input_value = { 'countryname': countryname }
-            countryname = countryname
+            countryname = countryname,
+            run=False,
         # run_async() starts the child execution and then immediately returns.
         # This means that the for loop continues and the next child execution
         # is started right away - the REST calls will be executed in parallel.

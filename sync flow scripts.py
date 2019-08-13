@@ -22,7 +22,7 @@ def handler(system, this):
         repository_path='repo',
         httpCookie=repo_info['httpCookie'],
         ref=commit_sha,
-    ).run()
+    )
     # list all flows from the repository
     # this call will return a list of File objects
     files = system.files(dir='repo/flows', glob='**/*.py')

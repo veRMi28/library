@@ -47,7 +47,6 @@ def handler(system, this):
             **ansible_host,
             src=f'cloudomation:ansible-integration-demo/{file}',
             dst=file,
-            run=True,
             wait=False,
         ))
     tasks.append(this.task(
@@ -55,7 +54,6 @@ def handler(system, this):
         **ansible_host,
         src=f'cloudomation:ansible-integration-demo/{playbook}',
         dst=playbook,
-        run=True,
         wait=False,
     ))
     this.wait_for(*tasks)
@@ -63,7 +61,6 @@ def handler(system, this):
         'SSH',
         **ansible_host,
         script=script,
-        run=True,
     ).get('output_value')['report']
     this.save(output_value={'report': report})
     return this.success('all done')

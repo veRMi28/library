@@ -29,7 +29,7 @@
 # Cloudomation, the easiest way is to disable the webhook on github. You can
 # also remove or rename the webhook on Cloudomation, but that will lead to
 # errors on the side of your github webhook, which will still try to send
-# notifications to the Cloudomation webhook. 
+# notifications to the Cloudomation webhook.
 
 import yaml
 import os
@@ -59,7 +59,7 @@ def handler(system, this):
         repository_url=repo_url,
         repository_path='synced_from_git',
         ref=commit_sha,
-    ).run()
+    )
     # the git 'get' command ensures the content of the repository in a local
     # folder. it will clone or fetch and merge.
 

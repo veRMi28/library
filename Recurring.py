@@ -58,7 +58,7 @@ def handler(system, this):
             'Input Form',
             questions=questions,
             allow_empty=True,
-        ).run()
+        )
         outputs = input_form.get('output_value')
         if interval is None:
             interval = int(outputs['responses'].get('interval', 60))
@@ -89,6 +89,7 @@ def handler(system, this):
             flow_name,
             inputs=inputs,
             name=f'{flow_name} iteration #{iterations}',
+            run=False
         )
         if wait:
             try:

@@ -12,7 +12,7 @@ def handler(system, this):
         # I want to get the master branch - I could also specify a tag or
         # commit sha
         ref='master',
-    ).run()
+    )
     # Listing the files I got from git in the repository I specified on the
     # Cloudomation platform
     files = system.files(dir='flows_from_git')
