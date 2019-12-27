@@ -1,69 +1,91 @@
-import time
+import datetime
 
 
 def handler(system, this):
-    # Required input: flow_name
+    defaults = {
+        'delay': '60',
+    }
     inputs = this.get('input_value')
     try:
-        flow_name = inputs['flow_name']
+        defaults['flow_name'] = inputs['flow_name']
     except Exception:
-        return this.error('missing input "flow_name"')
-    this.log(flow_name=flow_name)
+        pass
 
-    # Optional input: do_query
-    do_query = str(inputs.get('do_query', False)) == 'True'
-    this.log(do_query=do_query)
+    response = system.message(
+        subject='Delayed execution',
+        body={
+            'type': 'object',
+            'properties': {
+                'flow_name': {
+                    'label': 'Name of the flow which should be started',
+                    'element': 'string',
+                    'type': 'string',
+                    'example': defaults.get('flow_name'),
+                    'default': defaults.get('flow_name'),
+                    'order': 1,
+                },
+                'label': {
+                    'description': 'You can either specify a time when the execution should be started, or a delay in seconds',
+                    'element': 'markdown',
+                    'order': 2,
+                },
+                'time': {
+                    'label': 'Time when the child execution should be started',
+                    'element': 'time',
+                    'type': 'string',
+                    'format': 'time',
+                    'order': 3,
+                },
+                'delay': {
+                    'label': 'Delay in seconds after which the child execution should be started',
+                    'element': 'number',
+                    'type': 'number',
+                    'example': defaults['delay'],
+                    'default': defaults['delay'],
+                    'order': 4,
+                },
+                'start': {
+                    'label': 'Start delayed',
+                    'element': 'submit',
+                    'order': 5,
+                },
+            },
+            'required': [
+                'flow_name',
+            ],
+        },
+    ).wait().get('response')
 
-    # Optional input: use
-    default_use = 'delay'
-    if 'use' in inputs:
-        use = inputs['use']
-    elif do_query:
-        use = this.task(
-            'INPUT',
-            request=f'Use "timestamp" or "delay" [{default_use}]',
-        ).get('output_value').get('response', default_use)
-    else:
-        use = default_use
-        this.log(use=use)
+    this.log(response=response)
+    flow_name = response['flow_name']
+    scheduled_at = response.get('time')
+    delay = response.get('delay')
 
-    if use == 'timestamp':
-        # Optional input: timestamp
-        default_timestamp = int(time.time()) + 60
-        if 'timestamp' in inputs:
-            timestamp = int(inputs['timestamp'])
-        elif do_query:
-            timestamp = this.task(
-                'INPUT',
-                request=f'Unix timestamp when the flow should be started [{default_timestamp}]',
-            ).get('output_value').get('response', default_timestamp)
-        else:
-            timestamp = default_timestamp  # Default value
-            this.log(timestamp=timestamp)
-    elif use == 'delay':
-        # Optional input: delay
-        default_delay = 60
-        if 'delay' in inputs:
-            delay = int(inputs['delay'])
-        elif do_query:
-            delay = this.task(
-                'INPUT',
-                request=f'Delay in seconds after which the flow should be started [{default_delay}]',
-            ).get('output_value').get('response', default_delay)
-        else:
-            delay = default_delay  # Default value
-            this.log(delay=delay)
-
-    if use == 'timestamp':
-        this.save(message=f'sleeping until {timestamp}')
-        this.log(f'sleeping until {timestamp}')
-        this.sleep_until(timestamp)
-    elif use == 'delay':
+    if scheduled_at is not None:
+        scheduled_at_t = datetime.datetime.strptime(scheduled_at, '%H:%M:%S%z').timetz()
+        this.log(scheduled_at_t=scheduled_at_t)
+        now = datetime.datetime.now(datetime.timezone.utc)
+        this.log(now=now)
+        today = now.date()
+        this.log(today=today)
+        scheduled = datetime.datetime.combine(today, scheduled_at_t)
+        this.log(scheduled=scheduled)
+        if scheduled < now:  # tomorrow
+            tomorrow = today + datetime.timedelta(days=1)
+            scheduled = datetime.datetime.combine(tomorrow, scheduled_at_t)
+            this.log(scheduled=scheduled)
+        scheduled_ts = scheduled.isoformat(sep=' ', timespec='minutes')
+        this.log(scheduled_ts=scheduled_ts)
+        delta_sec = (scheduled - now).total_seconds()
+        this.log(delta_sec=delta_sec)
+        this.save(message=f'sleeping until {scheduled_ts}')
+        this.sleep(delta_sec)
+    elif delay is not None:
         this.save(message=f'sleeping for {delay} seconds')
         this.log(f'sleeping for {delay} seconds')
         this.sleep(delay)
     else:
-        return this.error(f'Invalid value for "use": "{use}"')
+        return this.error('Missing response for "time" or "delay"')
 
     this.flow(
         flow_name,
