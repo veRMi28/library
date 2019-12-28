@@ -1,8 +1,5 @@
 """
 This flow script changes the password of an user.
-
-It queries the current and new password and sends a PATCH request
-to the cloudomation.io API.
 """
 
 
@@ -10,53 +7,68 @@ def handler(system, this):
     inputs = this.get('input_value')
     user_name = inputs.get('user_name', 'nobody')
 
-    # Query user details
-    questions = {
-        'current_password': {
-            'label': f'Current password of {user_name}',
-            'type': 'password',
-        },
-        'new_password': {
-            'label': f'New password for {user_name}',
-            'type': 'password'
-        },
-        'new_password_check': {
-            'label': f'New password for {user_name} (again)',
-            'type': 'password',
-        },
-    }
-    execution = this.flow(
-        'Input Form',
-        questions=questions,
-        init=dict(
-            protect_outputs=['responses']  # protect responses,
-                                           # they contain a password
-        ),
-    )
-    outputs = execution.get('output_value')
-    resp = outputs['responses']
+    response = system.message(
+        subject='Change user password',
+        body={
+            'type': 'object',
+            'properties': {
+                'user_name': {
+                    'element': 'string',
+                    'type': 'string',
+                    'example': 'Sam Sample',
+                    'default': user_name,
+                    'label': 'User name',
+                    'order': 1,
+                },
+                'current_password': {
+                    'element': 'password',
+                    'type': 'string',
+                    'label': 'Current password',
+                    'order': 2,
+                },
+                'current_password_label': {
+                    'element': 'markdown',
+                    'description': '<i class="fa fa-info fa-fw text-info"></i> Client admins are not required to specify the current password',
+                    'order': 3,
+                },
+                'new_password': {
+                    'element': 'password',
+                    'type': 'string',
+                    'label': 'New password',
+                    'order': 4,
+                },
+                'new_password_check': {
+                    'element': 'password',
+                    'type': 'string',
+                    'label': 'New password (again)',
+                    'order': 5,
+                },
+                'ok': {
+                    'element': 'submit',
+                    'type': 'boolean',
+                    'label': 'Ok',
+                    'order': 6,
+                },
+            },
+            'required': [
+                'user_name',
+                'new_password',
+                'new_password_check',
+            ],
+        }
+    ).wait().get('response')
 
-    if resp['new_password'] != resp['new_password_check']:
+    if response['new_password'] != response['new_password_check']:
         return this.error('passwords did not match')
 
-    patch = {
-        'current_password': resp['current_password'],
-        'password': resp['new_password']
-    }
+    if 'current_password' in response:
+        system.user(response['user_name']).save(
+            current_password=response['current_password'],
+            password=response['new_password'],
+        )
+    else:
+        system.user(response['user_name']).save(
+            password=response['new_password'],
+        )
 
-    # Send change password request
-    instance = system.get_env_name()
-    request = {
-        'url': f'https://{instance}.cloudomation.io/api/1/user/{user_name}',
-        'method': 'patch',
-        'data': patch
-    }
-    execution = this.task(
-        'REST',
-        input_value=request,
-        pass_user_token=True,
-        init=dict(
-            protect_inputs=['data']
-        ),
-    )
     this.success('all done')

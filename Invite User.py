@@ -9,45 +9,49 @@ activation link. The new user also has to set a password.
 
 def handler(system, this):
     # Query user details
-    body = {
-        'type': 'object',
-        'properties': {
-            'name_info': {
-                'element': 'markdown',
-                'example': 'Please enter a login name of the user you want to invite',
-                'order': 1,
+    response = system.message(
+        subject='Invite a new user to join your client',
+        body={
+            'type': 'object',
+            'properties': {
+                'name_info': {
+                    'element': 'markdown',
+                    'example': 'Please enter a login name of the user you want to invite',
+                    'order': 1,
+                },
+                'name': {
+                    'element': 'string',
+                    'type': 'string',
+                    'example': 'newuser',
+                    'maxLength': 32,
+                    'label': 'User name',
+                    'order': 2,
+                },
+                'email_info': {
+                    'element': 'markdown',
+                    'example': 'Please enter the email address of the user you want to invite. The user will receive an email with a link to accept the invitation.',
+                    'order': 3,
+                },
+                'email': {
+                    'element': 'string',
+                    'type': 'string',
+                    'format': 'email',
+                    'example': 'user@domain.com',
+                    'label': 'Email address',
+                    'order': 4,
+                },
+                'Send invitation': {
+                    'element': 'submit',
+                    'type': 'boolean',
+                    'order': 5,
+                },
             },
-            'name': {
-                'element': 'string',
-                'type': 'string',
-                'example': 'newuser',
-                'maxLength': 32,
-                'order': 2,
-            },
-            'email_info': {
-                'element': 'markdown',
-                'example': 'Please enter the email address of the user you want to invite. The user will receive an email with a link to accept the invitation.',
-                'order': 3,
-            },
-            'email': {
-                'element': 'string',
-                'type': 'string',
-                'format': 'email',
-                'example': 'user@domain.com',
-                'order': 4,
-            },
-            'Send invitation': {
-                'element': 'submit',
-                'type': 'boolean',
-                'order': 5,
-            },
-        },
-        'required': [
-            'name',
-            'email',
-        ],
-    }
-    response = system.message(subject='Invite a new user to join your client', body=body).wait().get('response')
+            'required': [
+                'name',
+                'email',
+            ],
+        }
+    ).wait().get('response')
     this.log(response=response)
 
     # Create user object
