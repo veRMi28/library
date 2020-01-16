@@ -9,7 +9,7 @@ activation link. The new user also has to set a password.
 
 def handler(system, this):
     # Query user details
-    response = system.message(
+    message = system.message(
         subject='Invite a new user to join your client',
         body={
             'type': 'object',
@@ -29,7 +29,10 @@ def handler(system, this):
                 },
                 'email_info': {
                     'element': 'markdown',
-                    'example': 'Please enter the email address of the user you want to invite. The user will receive an email with a link to accept the invitation.',
+                    'example': (
+                        'Please enter the email address of the user you want to invite.'
+                        'The user will receive an email with a link to accept the invitation.'
+                    ),
                     'order': 3,
                 },
                 'email': {
@@ -51,15 +54,16 @@ def handler(system, this):
                 'email',
             ],
         }
-    ).wait().get('response')
-    this.log(response=response)
-
-    # Create user object
-    system.user(
-        select=None,
-        name=response['name'],
-        pending_email=response['email'],
     )
 
-    # Success
-    this.success(f'{response["name"]} was invited to cloudomation')
+    message_id = message.get('id')
+    this.save(output_value={
+        'message_id': message_id,
+    })
+    this.flow(
+        'Invite User Create',
+        message_id=message_id,
+        wait=False,
+    )
+
+    return this.success('all done')
