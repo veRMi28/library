@@ -2,7 +2,7 @@ import datetime
 
 
 def handler(system, this):
-    inputs = this.get('input_value')
+    inputs = this.get('input_value') or {}
     message_id = inputs.get('message_id')
 
     if message_id is None:
@@ -58,10 +58,11 @@ def handler(system, this):
         })
         this.flow(
             'Scheduled',
+            name='Scheduled execution',
             message_id=message_id,
             wait=False,
         )
-        return this.success('requested scheduled execution details')
+        return this.success('requested details')
 
     message = system.message(message_id)
     response = message.wait().get('response')
@@ -69,6 +70,7 @@ def handler(system, this):
     flow_name = response['flow_name']
     scheduled_at = response['scheduled_at']
     max_iterations = response.get('max_iterations')
+    this.save(name=f'Scheduled {flow_name}')
 
     scheduled_at_t = datetime.datetime.strptime(scheduled_at, '%H:%M:%S%z').timetz()
     this.log(scheduled_at_t=scheduled_at_t)
@@ -89,7 +91,7 @@ def handler(system, this):
         this.log(scheduled_ts=scheduled_ts)
         delta_sec = (scheduled - now).total_seconds()
         this.log(delta_sec=delta_sec)
-        this.save(message=f'sleeping until {scheduled_ts}')
+        this.save(message=scheduled_ts)
         this.sleep(delta_sec)
         iterations += 1
         this.save(message=f'iteration {iterations}/{max_iterations}')

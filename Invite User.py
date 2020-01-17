@@ -8,7 +8,7 @@ activation link. The new user also has to set a password.
 
 
 def handler(system, this):
-    inputs = this.get('input_value')
+    inputs = this.get('input_value') or {}
     message_id = inputs.get('message_id')
 
     if message_id is None:
@@ -68,7 +68,7 @@ def handler(system, this):
             message_id=message_id,
             wait=False,
         )
-        return this.success('requested new user details')
+        return this.success('requested details')
 
     message = system.message(message_id)
     response = message.wait().get('response')
