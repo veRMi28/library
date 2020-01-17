@@ -3,63 +3,78 @@ from datetime import datetime, timezone
 
 
 def handler(system, this):
-    defaults = {
-        'interval': 60,
-        'wait': True,
-    }
     inputs = this.get('input_value')
-    try:
-        defaults['flow_name'] = inputs['flow_name']
-    except Exception:
-        pass
+    message_id = inputs.get('message_id')
 
-    response = system.message(
-        subject='Recurring execution',
-        body={
-            'type': 'object',
-            'properties': {
-                'flow_name': {
-                    'label': 'Name of the flow which should be started recurring',
-                    'element': 'string',
-                    'type': 'string',
-                    'example': defaults.get('flow_name'),
-                    'default': defaults.get('flow_name'),
-                    'order': 1,
+    if message_id is None:
+        defaults = {
+            'interval': 60,
+            'wait': True,
+        }
+        try:
+            defaults['flow_name'] = inputs['flow_name']
+        except Exception:
+            pass
+
+        message = system.message(
+            subject='Recurring execution',
+            body={
+                'type': 'object',
+                'properties': {
+                    'flow_name': {
+                        'label': 'Name of the flow which should be started recurring',
+                        'element': 'string',
+                        'type': 'string',
+                        'example': defaults.get('flow_name'),
+                        'default': defaults.get('flow_name'),
+                        'order': 1,
+                    },
+                    'interval': {
+                        'label': 'Interval of recurring execution in seconds',
+                        'element': 'number',
+                        'type': 'number',
+                        'example': defaults['interval'],
+                        'default': defaults['interval'],
+                        'order': 2,
+                    },
+                    'wait': {
+                        'label': 'Wait for child executions to finish',
+                        'element': 'toggle',
+                        'type': 'boolean',
+                        'default': defaults['wait'],
+                        'order': 3,
+                    },
+                    'max_iterations': {
+                        'label': 'Maximum number of iterations (unlimited if omitted)',
+                        'element': 'number',
+                        'type': 'number',
+                        'order': 4,
+                    },
+                    'start': {
+                        'label': 'Start recurring',
+                        'element': 'submit',
+                        'order': 5,
+                    },
                 },
-                'interval': {
-                    'label': 'Interval of recurring execution in seconds',
-                    'element': 'number',
-                    'type': 'number',
-                    'example': defaults['interval'],
-                    'default': defaults['interval'],
-                    'order': 2,
-                },
-                'wait': {
-                    'label': 'Wait for child executions to finish',
-                    'element': 'toggle',
-                    'type': 'boolean',
-                    'default': defaults['wait'],
-                    'order': 3,
-                },
-                'max_iterations': {
-                    'label': 'Maximum number of iterations (unlimited if omitted)',
-                    'element': 'number',
-                    'type': 'number',
-                    'order': 4,
-                },
-                'start': {
-                    'label': 'Start recurring',
-                    'element': 'submit',
-                    'order': 5,
-                },
+                'required': [
+                    'flow_name',
+                    'interval',
+                ],
             },
-            'required': [
-                'flow_name',
-                'interval',
-            ],
-        },
-    ).wait().get('response')
+        )
+        message_id = message.get('id')
+        this.save(output_value={
+            'message_id': message_id,
+        })
+        this.flow(
+            'Recurring',
+            message_id=message_id,
+            wait=False,
+        )
+        return this.success('requested recurring execution details')
 
+    message = system.message(message_id)
+    response = message.wait().get('response')
     this.log(response=response)
     flow_name = response['flow_name']
     interval = response['interval']

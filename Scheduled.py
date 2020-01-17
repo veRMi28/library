@@ -2,55 +2,69 @@ import datetime
 
 
 def handler(system, this):
-    defaults = {
-        'scheduled_at': '08:30',
-    }
     inputs = this.get('input_value')
-    try:
-        defaults['flow_name'] = inputs['flow_name']
-    except Exception:
-        pass
+    message_id = inputs.get('message_id')
 
-    response = system.message(
-        subject='Scheduled execution',
-        body={
-            'type': 'object',
-            'properties': {
-                'flow_name': {
-                    'label': 'Name of the flow which should be scheduled',
-                    'element': 'string',
-                    'type': 'string',
-                    'example': defaults.get('flow_name'),
-                    'default': defaults.get('flow_name'),
-                    'order': 1,
+    if message_id is None:
+        defaults = {
+            'scheduled_at': '08:30',
+        }
+        try:
+            defaults['flow_name'] = inputs['flow_name']
+        except Exception:
+            pass
+        message = system.message(
+            subject='Scheduled execution',
+            body={
+                'type': 'object',
+                'properties': {
+                    'flow_name': {
+                        'label': 'Name of the flow which should be scheduled',
+                        'element': 'string',
+                        'type': 'string',
+                        'example': defaults.get('flow_name'),
+                        'default': defaults.get('flow_name'),
+                        'order': 1,
+                    },
+                    'scheduled_at': {
+                        'label': 'Time when the child execution should be started',
+                        'element': 'time',
+                        'type': 'string',
+                        'format': 'time',
+                        'default': defaults['scheduled_at'],
+                        'order': 2,
+                    },
+                    'max_iterations': {
+                        'label': 'Maximum number of iterations (unlimited if omitted)',
+                        'element': 'number',
+                        'type': 'number',
+                        'order': 3,
+                    },
+                    'start': {
+                        'label': 'Start schedule',
+                        'element': 'submit',
+                        'order': 4,
+                    },
                 },
-                'scheduled_at': {
-                    'label': 'Time when the child execution should be started',
-                    'element': 'time',
-                    'type': 'string',
-                    'format': 'time',
-                    'default': defaults['scheduled_at'],
-                    'order': 2,
-                },
-                'max_iterations': {
-                    'label': 'Maximum number of iterations (unlimited if omitted)',
-                    'element': 'number',
-                    'type': 'number',
-                    'order': 3,
-                },
-                'start': {
-                    'label': 'Start schedule',
-                    'element': 'submit',
-                    'order': 4,
-                },
+                'required': [
+                    'flow_name',
+                    'scheduled_at',
+                ],
             },
-            'required': [
-                'flow_name',
-                'scheduled_at',
-            ],
-        },
-    ).wait().get('response')
+        )
+        message_id = message.get('id')
+        this.save(output_value={
+            'message_id': message_id,
+        })
+        this.flow(
+            'Scheduled',
+            message_id=message_id,
+            wait=False,
+        )
+        return this.success('requested scheduled execution details')
 
+    message = system.message(message_id)
+    response = message.wait().get('response')
     this.log(response=response)
     flow_name = response['flow_name']
     scheduled_at = response['scheduled_at']
