@@ -2,6 +2,7 @@ import textwrap
 import time
 import yaml
 import datetime
+from xml.sax.saxutils import unescape
 
 
 def handler(system, this):
@@ -18,7 +19,7 @@ def handler(system, this):
     text = ''
     iterations = 0
     delay = 0
-    retention_time = 0
+    file_content = ''
     message = ''
     
     def get_message(step):
@@ -107,9 +108,10 @@ def handler(system, this):
                 **Congratulations!**
                 
                 Your execution `{execution_name}` just ended with status `{execution_status}`.
-                When you pressed <span class="text-success"><i class="fa fa-play"></i> Try</span>, the user-interface switched to the newly created execution record.
-                You can see details about the execution in the execution record.
-                When you scroll down, you will see the "Outputs" field which contains:
+                When you pressed <span class="text-success"><i class="fa fa-play"></i> Try</span>, the user-interface switched to the executions list.
+                You can see an overview of all running executions in the execution list.
+                By clicking on the name of your execution, you open the execution record view.
+                When scrolling down in the execution record view, you will see the “Outputs” field which contains:
                 
                 ```yaml
 {textwrap.indent(output_value_str,'                ')}
@@ -211,32 +213,38 @@ def handler(system, this):
                 '''),
             textwrap.dedent( # step 9
                 f'''
-                Now, let's see some configuration options.
+                Now, let's see how to work with files.
+                
+                The **Files** section is right beneath the settings section on the left.
 
-                Settings can also be used to tweak the behaviour of Cloudomation.
-
-                **Execution expiry**
-
-                You might have already noticed that execution records expire.
-                You can see the expiration time in the fields of an ended execution record.
-                Per default, once an execution reaches and end state (success or error), it will be kept available for one week.
-                Once this time passed, the execution record is removed automatically.
-
-                This can be changed by creating a setting called `client.execution.retention_time.minutes`.
-                The value of this setting is used as the retention time for all new executions.
+                **Flow Scripts, Settings and everything else**
+                
+                In this section, you can store flow scripts, settings, shell scripts, markup files, zip files etc.
+                All these files can be loaded and manipulated through flow scripts.
 
                 <div class="alert alert-primary">
                     <strong class="d-block pb-1">Your tasks:</strong>
-                    <div><i class="fa fa-check-square-o"></i> Create a setting and change the name to <code>client.execution.retention_time.minutes</code>.</div>
-                    <div><i class="fa fa-check-square-o"></i> Change the value of the setting to <code>10</code>.</div>
-                    <div><i class="fa fa-check-square-o"></i> Save the setting by pressing <span class="text-primary"><i class="fa fa-save"></i> Save</span> in the action bar.</div>
+                    <div><i class="fa fa-check-square-o"></i> Create a file by pressing <span class="text-primary"><i class="fa fa-file-o"></i> New</span> in the action bar.</div>
+                    <div><i class="fa fa-check-square-o"></i> Rename the file to <code>myfile.txt</code> and write something into the text field and press <span class="text-primary"><i class="fa fa-save"></i> Save</span> in the action bar.</div>                    
+                    <div><i class="fa fa-check-square-o"></i> Create a new flow and paste the following script into the code editor:
+                    <pre class="ml-3"><code>def handler(system, this):
+                    # read the value of the file
+                    read_file = system.file(
+                        name='myfile.txt'
+                    )
+                    # print contents of the file to the log output
+                    this.log(read_file.get('content'))
+                    this.success(message='all done')</code></pre>
+                    </div>
+                    <div><i class="fa fa-check-square-o"></i> Create an execution of the flow by pressing <span class="text-success"><i class="fa fa-play"></i> Try</span> in the action bar.</div>
                 </div>
                 '''),
             textwrap.dedent( # step 10
                 f'''
-                Now all new executions will expire {retention_time} minutes after they reach an end state.
+                You can see the content of the file in the **Outputs** section in the execution <code>{execution_name}</code>:
+                <pre class="ml-3"><code>{file_content}</code></pre>
 
-                You can learn more about configuration options in the [Settings](/documentation/Settings#clientconfiguration){{ext}} documentation.
+                You can learn more about files under [Files](/documentation/File%20handling%20with%20Cloudomation){{ext}} in the documentation.
 
                 ---
 
@@ -302,7 +310,7 @@ def handler(system, this):
                 - `['json']['value']['joke']` selects the part of the output value we are interested in.
 
                 <div class="alert alert-primary">
-                    <strong class="d-block pb-1">Your first task:</strong>
+                    <strong class="d-block pb-1">Your task:</strong>
                     <div><i class="fa fa-check-square-o"></i> Close this message by pressing "OK".</div>
                 </div>
                 '''),
@@ -396,7 +404,7 @@ def handler(system, this):
                         break
                 if setting is None:
                     continue
-                modified_at = setting.load('modified_at')                
+                modified_at = setting.load('modified_at')
                 if modified_at is not None and modified_at > before_modified_at:
                     before_modified_at = modified_at
                     value = setting.get('value')
@@ -457,27 +465,35 @@ def handler(system, this):
                     break
                 this.sleep(1)
         elif step == 9:
-            setting = None
-            while setting is None:
-                for cur_setting in system.settings():
-                    if cur_setting.load('name') == 'client.execution.retention_time.minutes':
-                        setting = cur_setting
-                        break
-                this.sleep(1)
+            file_content = None
+            execution = None
             while True:
-                retention_time = setting.load('value')
-                if type(retention_time) == int:
+                for cur_files in system.files():
+                    if cur_files.load('name') == 'myfile.txt':
+                        myfile = system.file('myfile.txt')
+                        file_content = myfile.get('content')
+                for cur_execution in system.executions():
+                    if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
+                        execution = cur_execution
+                if file_content and execution:
+                    break
+                this.sleep(1) 
+            execution_name = execution.load('name')           
+        elif step == 10:            
+            task = None
+            execution = None
+            while True:
+                for cur_execution in system.executions():
+                    if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
+                        if cur_execution.get('type') == 'TASK':
+                            task = cur_execution
+                        else:
+                            execution = cur_execution
+                if task and execution:
                     break
                 this.sleep(1)
-        elif step == 10:
-            execution = None
-            while execution is None:
-                for cur_execution in system.executions():
-                    if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now and cur_execution.get('type') == 'FLOW':
-                        execution = cur_execution
-                        break
-                this.sleep(1)
-            execution.wait(return_when=system.return_when.ALL_ENDED)
-            execution_name, message = execution.load('name', 'message')
+            execution.wait(return_when=system.return_when.ALL_SUCCEEDED)
+            execution_name = execution.load('name')
+            message = unescape(task.get('output_value')['json']['value']['joke'])
     
     return this.success('all done')
