@@ -399,7 +399,7 @@ def handler(system, this):
             while True:
                 setting = None
                 for cur_setting in system.settings():
-                    if cur_setting is not None and cur_setting.get('id') == setting_id:
+                    if cur_setting is not None and cur_setting.load('modified_at') > before_modified_at:
                         setting = cur_setting
                         break
                 if setting is None:
@@ -468,23 +468,26 @@ def handler(system, this):
             file_content = None
             execution = None
             while True:
-                for cur_files in system.files():
-                    if cur_files.load('name') == 'myfile.txt':
-                        myfile = system.file('myfile.txt')
-                        file_content = myfile.get('content')
-                for cur_execution in system.executions():
-                    if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
-                        execution = cur_execution
+                if file_content is None:
+                    for cur_files in system.files():
+                        if cur_files.load('name') == 'myfile.txt':
+                            myfile = system.file('myfile.txt')
+                            file_content = myfile.get('content')
+                if execution is None:
+                    for cur_execution in system.executions():
+                        if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
+                            execution = cur_execution
                 if file_content and execution:
                     break
                 this.sleep(1) 
-            execution_name = execution.load('name')           
-        elif step == 10:            
+            execution_name = execution.load('name')
+        elif step == 10:
             task = None
             execution = None
             while True:
                 for cur_execution in system.executions():
-                    if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
+                    created_at = cur_execution.get('created_at')
+                    if created_at is not None and datetime.datetime.strptime(created_at, DT_FORMAT) > dt_now:
                         if cur_execution.get('type') == 'TASK':
                             task = cur_execution
                         else:
