@@ -266,7 +266,7 @@ def handler(system, this):
                     # access a field of the JSON response
                     joke = task.get('output_value')['json']['value']['joke']
                     # end with a joke
-                    return this.end('success', message=joke)</code></pre>
+                    return this.success(message=joke)</code></pre>
                     </div>
                     <div><i class="fa fa-check-square-o"></i> Create an execution of the flow by pressing <span class="text-success"><i class="fa fa-play"></i> Try</span> in the action bar.</div>
                 </div>
