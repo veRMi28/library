@@ -217,9 +217,7 @@ def handler(system, this):
                 
                 The **Files** section is right beneath the settings section on the left.
 
-                **Flow Scripts, Settings and everything else**
-                
-                In this section, you can store flow scripts, settings, shell scripts, markup files, zip files etc.
+                In this section, you can store arbitrary files like shell scripts, markup files, zip files etc.
                 All these files can be loaded and manipulated through flow scripts.
 
                 <div class="alert alert-primary">
