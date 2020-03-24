@@ -83,8 +83,8 @@ def handler(system, this):
 
                 Flow names must be unique among all flows.
 
-                The flow script should be python code with a handler function.
-                There are many python tutorials out there, for example [The Python Tutorial](https://docs.python.org/3/tutorial/){{ext}} by the Python Software Foundation
+                The flow script has to be Python code with a handler function.
+                There are many Python tutorials out there, for example [The Python Tutorial](https://docs.python.org/3/tutorial/){{ext}} by the Python Software Foundation
 
                 <div class="alert alert-info p-row p-align-center">
                     <i class="fa fa-info fa-2x text-info pr-3"></i> The rest of the wizard assumes basic understanding of Python syntax.
@@ -109,6 +109,14 @@ def handler(system, this):
                 
                 Your execution `{execution_name}` just ended with status `{execution_status}`.
                 When you pressed <span class="text-success"><i class="fa fa-play"></i> Try</span>, the user-interface switched to the executions list.
+
+                **The difference between <span class="text-success"><i class="fa fa-play"></i> Try</span> and <span class="text-success"><i class="fa fa-play"></i> Run</span>**
+                
+                Both actions start the execution of your flow. For development, you can use <span class="text-success"><i class="fa fa-play"></i> Try</span> in the browser.
+                <span class="text-success"><i class="fa fa-play"></i> Run</span> is meant for productive use.
+                
+                **Executions**
+
                 You can see an overview of all running executions in the execution list.
                 By clicking on the name of your execution, you open the execution record view.
                 When scrolling down in the execution record view, you will see the “Outputs” field which contains:
@@ -316,11 +324,12 @@ def handler(system, this):
                 f'''
                 We've reached the end of the first steps wizard. Here are some links you can follow to deepen your understanding of Cloudomation:
 
+                - Learn more about using Cloudomation in the [Tutorial](https://cloudomation.com/documentation/tutorial/){{ext}}
                 - [Invite users](/users){{ext}} to join your Cloudomation client "{client_name}"
-                - Set up [integration with Git](/documentation/Using%20flow%20scripts%20from%20git){{ext}}
+                - Set up [integration with Git](https://cloudomation.com/documentation/using-flow-scripts-from-git/){{ext}}
                 - Read the flow [script function reference](/documentation/Flow%20script%20function%20reference){{ext}}
                 - Explore available [task types](/documentation/Tasks){{ext}}
-                - Set up [webhooks](/documentation/Webhooks){{ext}}.
+                - Set up [webhooks](https://cloudomation.com/documentation/webhooks/){{ext}}.
                 - If there are any questions or issues, please do not hesitate to [contact us](/contact){{ext}}.
 
                 Enjoy automating!
@@ -397,9 +406,12 @@ def handler(system, this):
             while True:
                 setting = None
                 for cur_setting in system.settings():
-                    if cur_setting is not None and cur_setting.load('modified_at') > before_modified_at:
-                        setting = cur_setting
-                        break
+                    try:
+                        if cur_setting is not None and cur_setting.load('modified_at') > before_modified_at:
+                            setting = cur_setting
+                            break
+                    except Exception:
+                        pass
                 if setting is None:
                     continue
                 modified_at = setting.load('modified_at')
