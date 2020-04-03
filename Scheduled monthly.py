@@ -30,7 +30,7 @@ def handler(system, this):
         }
         try:
             defaults['flow_name'] = inputs['flow_name']
-        except KeyError:
+        except (KeyError, TypeError):
             pass
         message = system.message(
             subject='Monthly scheduled execution',

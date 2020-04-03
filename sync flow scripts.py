@@ -24,7 +24,7 @@ def handler(system, this):
     # when started manually, it will sync from master
     try:
         ref = inputs['data_json']['commit_sha']
-    except KeyError:
+    except (KeyError, TypeError):
         ref = 'master'
     # read the connection information of the private repository
     repo_info = system.setting('private git repo').get('value')
