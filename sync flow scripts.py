@@ -1,48 +1,65 @@
-import yaml
+"""
+inputs:
+    - data_json/commit_sha:
+        type: str
+        required: False
+        doc: The commit_sha to fetch. If missing `origin/master` will be fetched.
+"""
+
 import os
+import yaml
+import base64
 
 
 def handler(system, this):
+    """
+    Clone a git repository, create Cloudomation objects from the files.
+    All .py files in the flows/ subdirectory will be stored as Flows.
+    All .yaml files in the settings/ subdirectory will be stored as Settings.
+    All files in the files/ subdirectory will be stored as Files.
+    """
     inputs = this.get('input_value')
     # this flow is registered as webhook, triggered by a commit to the
     # repository. The commit sha is passed in .data_json.commit_sha
     # when started manually, it will sync from master
     try:
-        commit_sha = inputs['data_json']['commit_sha']
-    except Exception:
-        commit_sha = 'origin/master'
+        ref = inputs['data_json']['commit_sha']
+    except KeyError:
+        ref = 'master'
     # read the connection information of the private repository
     repo_info = system.setting('private git repo').get('value')
-    # the git 'get' command ensures the content of the repository in a local
-    # folder. it will clone or fetch and merge.
-    this.task(
+    # the git 'get' command fetches the content of the repository.
+    # since no files_path is passed, the files will be returned in the
+    # output_value of the task
+    files = this.task(
         'GIT',
         command='get',
         repository_url=repo_info['repository_url'],
-        repository_path='repo',
         httpCookie=repo_info['httpCookie'],
-        ref=commit_sha,
-    )
-    # list all flows from the repository
-    # this call will return a list of File objects
-    files = system.files(dir='repo/flows', glob='**/*.py')
-    this.log(files=files)
-    for file in files:
-        # access the path field of the file object
-        path = file.get('path')
-        # ignore any subdirectory and extension
-        name, ext = os.path.splitext(os.path.basename(path))
-        # access the content of the file
-        content = file.get('content')
-        # create a new Flow object
-        system.flow(name, script=content)
-    # repeat the same for yaml files and Setting objects
-    files = system.files(dir='repo/settings', glob='**/*.yaml')
-    this.log(files=files)
-    for file in files:
-        path = file.get('path')
-        name, ext = os.path.splitext(os.path.basename(path))
-        content = file.get('content')
-        value = yaml.safe_load(content)
-        system.setting(name, value=value)
+        ref=ref,
+    ).get('output_value')['files']
+    # iterate over all files
+    for file_ in files:
+        # split the path and filename
+        path, filename = os.path.split(file_['name'])
+        # split the filename and file extension
+        name, ext = os.path.splitext(filename)
+        if path == 'flows' and ext == '.py':
+            # decode the base64 file content to text
+            text_content = base64.b64decode(file_['content']).decode()
+            # create or update Flow object
+            system.flow(name).save(script=text_content)
+        elif path == 'settings' and ext == '.yaml':
+            # decode the base64 file content to text
+            text_content = base64.b64decode(file_['content']).decode()
+            # load the yaml string in the file content
+            value = yaml.safe_load(text_content)
+            # create or update Setting object
+            system.setting(name).save(value=value)
+        elif path == 'files':
+            # create or update File object
+            # we use the name with the extension
+            # pass the base64 encoded binary file content directly
+            system.file(filename).save(content=file_['content'], convert_binary=False)
+
     this.success('all done')

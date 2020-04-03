@@ -31,16 +31,16 @@
 # errors on the side of your github webhook, which will still try to send
 # notifications to the Cloudomation webhook.
 
-import yaml
 import os
+import yaml
 
 
 def handler(system, this):
     inputs = this.get('input_value')
     try:
         commit_sha = inputs['data_json']['commit_sha']
-    except Exception:
-        commit_sha = 'origin/master'
+    except KeyError:
+        commit_sha = 'master'
 
     # read the connection information of the private repository
     repo_info = system.setting('github_info').get('value')
@@ -57,7 +57,7 @@ def handler(system, this):
         'GIT',
         command='get',
         repository_url=repo_url,
-        repository_path='synced_from_git',
+        files_path='synced_from_git',
         ref=commit_sha,
     )
     # the git 'get' command ensures the content of the repository in a local
@@ -65,25 +65,19 @@ def handler(system, this):
 
     # list all flows from the repository
     # this call will return a list of File objects
-    files = system.files(dir='synced_from_git', glob='**/*.py')
-    this.log(files=files)
-    for file in files:
-        # access the path field of the file object
-        path = file.get('path')
-        # ignore any subdirectory and extension
-        name, ext = os.path.splitext(os.path.basename(path))
-        # access the content of the file
-        content = file.get('content')
-        # create a new Flow object
-        system.flow(name=name, script=content)
-    # repeat the same for yaml files and Setting objects
-    files = system.files(dir='synced_from_git', glob='**/*.yaml')
-    this.log(files=files)
-    for file in files:
-        path = file.get('path')
-        name, ext = os.path.splitext(os.path.basename(path))
-        content = file.get('content')
-        value = yaml.safe_load(content)
-        system.setting(name=name, value=value)
+    files = system.files(filter={'field': 'name', 'op': 'like', 'value': 'synced_from_git/%'})
+    for file_ in files:
+        # split the path and filename
+        path, filename = os.path.split(file_.get('name'))
+        # split the filename and file extension
+        name, ext = os.path.splitext(filename)
+        if path == 'flows' and ext == '.py':
+            # create or update Flow object
+            system.flow(name).save(script=file_.get('content'))
+        elif path == 'settings' and ext == '.yaml':
+            # load the yaml string in the file content
+            value = yaml.safe_load(file_.get('content'))
+            # create or update Setting object
+            system.setting(name).save(value=value)
 
-    this.success('Github sync complete')
+    return this.success('Github sync complete')
