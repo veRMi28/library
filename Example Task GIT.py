@@ -1,21 +1,29 @@
 def handler(system, this):
     # get the contents of a public github repository
-    this.task(
+    task = this.task(
         'GIT',
         command='get',
-        # Specify the url of the repository - note that all files from that
-        # repository will be copied
+        # The url to a public repository
         repository_url='https://github.com/starflows/library/',
-        # the repository path is where the files from git are stored in
-        # Cloudomation
-        repository_path='flows_from_git',
-        # I want to get the master branch - I could also specify a tag or
-        # commit sha
+        # Get the reference master, I could also specify a sha, another branch or a tag
         ref='master',
     )
-    # Listing the files I got from git in the repository I specified on the
-    # Cloudomation platform
-    files = system.files(dir='flows_from_git')
-    # I set the output to the list of files
-    this.log('git files', files)
-    this.success(message='all done')
+    outputs = task.get('output_value')
+    # Note that both the name and content of every file is part of the output
+    this.log(outputs)
+
+    task2 = this.task(
+        'GIT',
+        command='get',
+        repository_url='https://github.com/starflows/library/',
+        files_path='flow_library',
+        ref='v2',
+    )
+    outputs = task2.get('output_value')
+    # Here there are no files in the output
+    this.log(outputs)
+    # But they are saved to cloudomation:
+    files = system.files(dir='flow_library')
+    for file in files:
+        this.log(file)
+    this.success('all done')
