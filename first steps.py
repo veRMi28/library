@@ -371,18 +371,24 @@ def handler(system, this):
             flow = None
             while flow is None:
                 for cur_flow in system.flows():
-                    if cur_flow.get('created_at') is not None and datetime.datetime.strptime(cur_flow.get('created_at'), DT_FORMAT) > dt_now:
-                        flow = cur_flow
-                        break
+                    try:
+                        if cur_flow.get('created_at') is not None and datetime.datetime.strptime(cur_flow.get('created_at'), DT_FORMAT) > dt_now:
+                            flow = cur_flow
+                            break
+                    except Exception:
+                        pass
                 this.sleep(1)
 
         elif step == 3 or step == 6:
             execution = None
             while execution is None:
                 for cur_execution in system.executions():
-                    if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
-                        execution = cur_execution
-                        break
+                    try:
+                        if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
+                            execution = cur_execution
+                            break
+                    except Exception:
+                        pass
                 this.sleep(1)
             if step == 3:
                 execution.wait()
@@ -395,9 +401,12 @@ def handler(system, this):
             setting = None
             while setting is None:
                 for cur_setting in system.settings():
-                    if cur_setting is not None and cur_setting.get('created_at') is not None and datetime.datetime.strptime(cur_setting.get('created_at'), DT_FORMAT) > dt_now:
-                        setting = cur_setting
-                        break
+                    try:
+                        if cur_setting is not None and cur_setting.get('created_at') is not None and datetime.datetime.strptime(cur_setting.get('created_at'), DT_FORMAT) > dt_now:
+                            setting = cur_setting
+                            break
+                    except Exception:
+                        pass
                 this.sleep(1)
             setting_id = setting.get('id')
 
@@ -480,13 +489,19 @@ def handler(system, this):
             while True:
                 if file_content is None:
                     for cur_files in system.files():
-                        if cur_files.load('name') == 'myfile.txt':
-                            myfile = system.file('myfile.txt')
-                            file_content = myfile.get('content')
+                        try:
+                            if cur_files.load('name') == 'myfile.txt':
+                                myfile = system.file('myfile.txt')
+                                file_content = myfile.get('content')
+                        except Exception:
+                            pass
                 if execution is None:
                     for cur_execution in system.executions():
-                        if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
-                            execution = cur_execution
+                        try:
+                            if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
+                                execution = cur_execution
+                        except Exception:
+                            pass
                 if file_content and execution:
                     break
                 this.sleep(1) 
@@ -496,12 +511,15 @@ def handler(system, this):
             execution = None
             while True:
                 for cur_execution in system.executions():
-                    created_at = cur_execution.get('created_at')
-                    if created_at is not None and datetime.datetime.strptime(created_at, DT_FORMAT) > dt_now:
-                        if cur_execution.get('type') == 'TASK':
-                            task = cur_execution
-                        else:
-                            execution = cur_execution
+                    try:
+                        created_at = cur_execution.get('created_at')
+                        if created_at is not None and datetime.datetime.strptime(created_at, DT_FORMAT) > dt_now:
+                            if cur_execution.get('type') == 'TASK':
+                                task = cur_execution
+                            else:
+                                execution = cur_execution
+                    except Exception:
+                        pass
                 if task and execution:
                     break
                 this.sleep(1)
