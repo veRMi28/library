@@ -24,50 +24,44 @@ def handler(system, this):
 
     github_form_response = system.message(
         subject='GitHub info',
+        message_type='POPUP',
         body={
             'type': 'object',
             'properties': {
-                'username_label': {
-                    'element': 'markdown',
-                    'label': 'What is your github username?',
-                    'order': 1,
-                },
                 'username': {
+                    'label': 'What is your GitHub username?',
                     'element': 'string',
                     'type': 'string',
-                    'order': 2,
+                    'order': 1,
                 },
                 'no_username': {
                     'element': 'submit',
                     'type': 'boolean',
-                    'example': 'I don\'t have a GitHub account',
-                    'order': 3,
+                    'label': 'I don\'t have a GitHub account',
+                    'order': 2,
                     'required': [],
                 },
                 'token_label': {
                     'element': 'markdown',
-                    'example': 'To interact with your github account via the github REST API, you need to supply a github token for your account.\nPlease go to [https://github.com/settings/tokens](https://github.com/settings/tokens){ext} and generate a personal access token.\nCheck the following options: repo and admin:repo_hook.\nPaste the token here after you have created it.',
-                    'order': 4,
+                    'description': 'To interact with your string account via the string REST API, you need to supply a string token for your account.\nPlease go to [https://github.com/settings/tokens](https://github.com/settings/tokens){ext} and generate a personal access token.\nCheck the following options: repo and admin:repo_hook.\nPaste the token here after you have created it.',
+                    'order': 3,
                 },
                 'token': {
                     'element': 'string',
+                    'label': 'GitHub token:',
                     'type': 'string',
-                    'order': 5,
-                },
-                'repo_label': {
-                    'element': 'markdown',
-                    'example': 'Which github repository you would like to use for your flow scripts? If this field is left blank, we will set up a new repository for you.',
-                    'order': 6,
+                    'order': 4,
                 },
                 'repository name': {
                     'element': 'string',
+                    'label': 'Which GitHub repository you would like to use for your flow scripts? If this field is left blank, we will set up a new repository for you.',
                     'type': 'string',
-                    'order': 7,
+                    'order': 5,
                 },
                 'Ok': {
                     'element': 'submit',
-                    'type': 'boolean',
-                    'order': 8,
+                    'label': 'OK',
+                    'order': 6,
                 },
             },
             'required': [
@@ -79,8 +73,22 @@ def handler(system, this):
 
     if github_form_response.get('no_username'):
         system.message(
-            subject='subject',
-            message='Please go to [https://github.com/join](https://github.com/join){ext} and create an account.',
+            subject='Please create a GitHub account',
+            message_type='POPUP',
+            body={
+                'type': 'object',
+                'properties': {
+                    'message': {
+                        'element': 'markdown',
+                        'description': 'Please go to [https://github.com/join](https://github.com/join){ext} and create an account. Restart this flow script once you have a GitHub account.',
+                        'order': 3,
+                    },
+                    'submit': {
+                        'element': 'submit',
+                        'label': 'OK',
+                    },
+                },
+            },
         )
         return this.success('restart this flow when you created a GitHub account')
 
@@ -92,43 +100,36 @@ def handler(system, this):
     if not github_repo_exists:
         github_new_repo_response = system.message(
             subject='new GitHub repository',
+            message_type='POPUP',
             body={
                 'type': 'object',
                 'properties': {
-                    'repo_label': {
-                        'element': 'markdown',
-                        'example': 'We will now set up a github repository for you.\nWhat should be the name of the repository?',
+                    'repository name': {
+                        'label': 'We will now set up a GitHub repository for you.\nWhat should be the name of the repository?',
+                        'element': 'string',
+                        'type': 'string',
                         'order': 1,
                     },
-                    'repository name': {
+                    'description': {
+                        'label': 'Please describe your repository briefly. This description will be published on your GitHub repository page, where you can change it later.',
                         'element': 'string',
                         'type': 'string',
                         'order': 2,
                     },
-                    'description_label': {
-                        'element': 'markdown',
-                        'example': 'Please describe your repository briefly. This description will be published on your github repository page, where you can change it later.',
-                        'order': 3,
-                    },
-                    'description': {
-                        'element': 'string',
-                        'type': 'string',
-                        'order': 4,
-                    },
                     'private_label': {
                         'element': 'markdown',
-                        'example': 'Do you want to create a private repository?',
-                        'order': 5,
+                        'description': 'Do you want to create a private repository?',
+                        'order': 3,
                     },
                     'private repository': {
                         'element': 'toggle',
                         'type': 'boolean',
-                        'order': 6,
+                        'order': 4,
                     },
                     'Create repository': {
                         'element': 'submit',
                         'type': 'boolean',
-                        'order': 7,
+                        'order': 5,
                     },
                 },
                 'required': [
@@ -144,36 +145,79 @@ def handler(system, this):
         private_repo = github_new_repo_response['private repository']
         homepage = f'https://github.com/{github_username}/{github_repo_name}'
 
-        this.task(
-            'REST',
-            url='https://api.github.com/user/repos',
-            method='POST',
-            data={
-                'name': github_repo_name,
-                'description': github_repo_description,
-                'homepage': homepage,
-                'private': private_repo,
-                'has_issues': 'true',
-                'has_projects': 'true',
-                'has_wiki': 'true',
-                'auto_init': 'true'
-            },
-            headers={
-                'Authorization': f'token {github_token}'
-            },
-        )
-        this.log(
-            f'Github repository created successfully. '
-            f'Check it out here: {homepage}'
-        )
+        create_repo = this.task(
+                'REST',
+                url='https://api.github.com/user/repos',
+                method='POST',
+                data={
+                    'name': github_repo_name,
+                    'description': github_repo_description,
+                    'homepage': homepage,
+                    'private': private_repo,
+                    'has_issues': 'true',
+                    'has_projects': 'true',
+                    'has_wiki': 'true',
+                    'auto_init': 'true'
+                },
+                headers={
+                    'Authorization': f'token {github_token}'
+                },
+                run = False,
+            )
 
-    github_info = {
-        'github_username': github_username,
-        'github_repo_name': github_repo_name,
-        'github_token': github_token
-    }
+        try:
+            create_repo.run()
+        except Exception:
+            creation_failed = create_repo.get('output_value')
+            this.log(creation_failed)
+            system.message(
+                subject='Repository creation failed',
+                message_type = 'POPUP',
+                body={
+                    'type': 'object',
+                    'properties': {
+                        'error': {
+                            'element': 'markdown',
+                            'description': (f'The creation of your GitHub repository failed with the following error: {creation_failed}'),
+                            'order': 1,
+                        },
+                        'Ok': {
+                            'element': 'submit',
+                            'label': 'OK',
+                            'order': 2,
+                        },
+                    },
+                },
+            )
 
-    system.setting(name='github_info', value=github_info)
-    this.set_output('github_info', github_info)
+        else:
+            system.message(
+                subject='Repository creation successful',
+                message_type='POPUP',
+                body={
+                    'type': 'object',
+                    'properties': {
+                        'success': {
+                            'element': 'markdown',
+                            'description': (f'GitHub repository created successfully. Check it out here: {homepage}'),
+                            'order': 1,
+                        },
+                        'Ok': {
+                            'element': 'submit',
+                            'label': 'OK',
+                            'order': 2,
+                        },
+                    },
+                },
+            )
+
+            github_info = {
+                'github_username': github_username,
+                'github_repo_name': github_repo_name,
+                'github_token': github_token
+            }
+
+            system.setting(name='github_info', value=github_info)
+            this.set_output('github_info', github_info)
 
     return this.success('all done.')
