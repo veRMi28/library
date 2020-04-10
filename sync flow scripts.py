@@ -1,6 +1,6 @@
 """
 inputs:
-    - data_json/commit_sha:
+    - json.commit_sha:
         type: str
         required: False
         doc: The commit_sha to fetch. If missing `origin/master` will be fetched.
@@ -20,10 +20,10 @@ def handler(system, this):
     """
     inputs = this.get('input_value')
     # this flow is registered as webhook, triggered by a commit to the
-    # repository. The commit sha is passed in .data_json.commit_sha
+    # repository. The commit sha is passed in .json.commit_sha
     # when started manually, it will sync from master
     try:
-        ref = inputs['data_json']['commit_sha']
+        ref = inputs['json']['commit_sha']
     except (KeyError, TypeError):
         ref = 'master'
     # read the connection information of the private repository

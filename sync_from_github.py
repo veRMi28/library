@@ -38,7 +38,7 @@ import yaml
 def handler(system, this):
     inputs = this.get('input_value')
     try:
-        commit_sha = inputs['data_json']['commit_sha']
+        commit_sha = inputs['json']['commit_sha']
     except (KeyError, TypeError):
         commit_sha = 'master'
 
