@@ -120,7 +120,7 @@ def handler(system, this):
     # and we check if our webhook already exists
     cloudomation_client_name = system.get_own_client().get('name')
     c_webhook_url = (
-        f'https://cloudomation.com/api/latest/webhook/'
+        f'https://app.cloudomation.com/api/latest/webhook/'
         f'{cloudomation_client_name}/'
         f'github_sync?'
         f'key={c_webhook_key}'
