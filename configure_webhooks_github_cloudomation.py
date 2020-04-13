@@ -19,8 +19,7 @@
 
 # The actual synchronisation of flow scripts and settings from github to your
 # Cloudomation client account is done by a third flow script called
-# "sync_from_github". Guess what: it's also available in the public flow script
-# library.
+# "sync_from_github". It's also available in the public flow script library.
 
 # For this process to work, you need the following three flow scripts:
 # 1. configure_webhoooks_github_cloudomation (this one)
@@ -37,17 +36,41 @@ def handler(system, this):
 
     # check if the webhook exists
     if not system.setting('client.webhook.github_sync').exists():
-        # if it doesn't exist, we create it
-        c_webhook_key_request = this.task(
-            'INPUT',
-            request=(
-                'Please specify an authorization key for the Cloudomation '
-                'webhook. Can be any alphanumeric string.'
-            )
-        )
-        c_webhook_key = c_webhook_key_request.get('output_value')['response']
+        # If it doesn't exist, we create it.
+        # First, we ask the user for a github authorisation key:
+        c_webhook_key_request = system.message(
+            subject='Github authorisation key',
+            message_type = 'POPUP',
+            body={
+                'type': 'object',
+                'properties': {
+                    'key': {
+                        'label': (f'Please specify an authorization key for the '
+                                 'Cloudomation webhook. Can be any alphanumeric '
+                                  'string.'),
+                        'element': 'string',
+                        'type': 'string',
+                        'order': 1,
+                    },
+                    'start': {
+                        'label': 'OK',
+                        'element': 'submit',
+                        'order': 2,
+                    },
+                },
+                'required': [
+                    'key',
+                ],
+            },
+        ).wait()
 
-        cloudomation_username = this.get('user_name')
+        c_webhook_key = c_webhook_key_request.get('response')['key']
+
+        # Second, we read out the user's name from this execution record.
+        # Note that this will set up a webhook with the user rights of
+        # the user who is executing this flow script.
+        cloudomation_username = system.get_own_user().get('name')
+
         system.setting(
             name='client.webhook.github_sync',
             value={
@@ -65,7 +88,7 @@ def handler(system, this):
     # which pushes events from a repository to the Cloudomation webhook
 
     # check if github info setting exists
-    # if it doesn't, start the flow script to request the info from the user
+    # if it doesn't, start the flow script to request info from user
     if not system.setting('github_info').exists():
         this.flow('request_github_info')
 
@@ -95,7 +118,7 @@ def handler(system, this):
     github_list_webhook = list_github_webhooks.get('output_value')['json']
 
     # and we check if our webhook already exists
-    cloudomation_client_name = this.get('client_name')
+    cloudomation_client_name = system.get_own_client().get('name')
     c_webhook_url = (
         f'https://cloudomation.com/api/1/webhook/'
         f'{cloudomation_client_name}/'

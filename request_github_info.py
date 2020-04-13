@@ -24,7 +24,7 @@ def handler(system, this):
 
     github_form_response = system.message(
         subject='GitHub info',
-        message_type='POPUP',
+        message_type = 'POPUP',
         body={
             'type': 'object',
             'properties': {
@@ -74,7 +74,7 @@ def handler(system, this):
     if github_form_response.get('no_username'):
         system.message(
             subject='Please create a GitHub account',
-            message_type='POPUP',
+            message_type = 'POPUP',
             body={
                 'type': 'object',
                 'properties': {
@@ -100,7 +100,7 @@ def handler(system, this):
     if not github_repo_exists:
         github_new_repo_response = system.message(
             subject='new GitHub repository',
-            message_type='POPUP',
+            message_type = 'POPUP',
             body={
                 'type': 'object',
                 'properties': {
@@ -193,7 +193,7 @@ def handler(system, this):
         else:
             system.message(
                 subject='Repository creation successful',
-                message_type='POPUP',
+                message_type = 'POPUP',
                 body={
                     'type': 'object',
                     'properties': {
@@ -211,13 +211,13 @@ def handler(system, this):
                 },
             )
 
-            github_info = {
-                'github_username': github_username,
-                'github_repo_name': github_repo_name,
-                'github_token': github_token
-            }
+    github_info = {
+        'github_username': github_username,
+        'github_repo_name': github_repo_name,
+        'github_token': github_token
+    }
 
-            system.setting(name='github_info', value=github_info)
-            this.set_output('github_info', github_info)
+    system.setting(name='github_info', value=github_info)
+    this.set_output('github_info', github_info)
 
     return this.success('all done.')
