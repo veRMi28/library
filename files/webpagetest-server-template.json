@@ -1,0 +1,67 @@
+{
+    "kind": "compute#instance",
+    "name": "webpagetest-server-template",
+    "zone": "projects/{PROJECT_ID}/zones/europe-west1-b",
+    "machineType": "projects/{PROJECT_ID}/zones/europe-west1-b/machineTypes/n1-highcpu-8",
+    "displayDevice": {
+      "enableDisplay": false
+    },
+    "metadata": {
+      "kind": "compute#metadata",
+      "items": [
+        {
+          "key": "startup-script",
+          "value": "{{startup_script}}"
+        },
+        {
+          "key": "enable-guest-attributes",
+          "value": "TRUE"
+        }
+      ]
+    },
+    "tags": {
+      "items": ["webpagetest-server"]
+    },
+    "disks": [
+      {
+        "kind": "compute#attachedDisk",
+        "type": "PERSISTENT",
+        "boot": true,
+        "mode": "READ_WRITE",
+        "autoDelete": true,
+        "deviceName": "webpagetest-server-template",
+        "initializeParams": {
+          "sourceImage": "projects/ubuntu-os-cloud/global/images/{{image_name}}",
+          "diskType": "projects/{PROJECT_ID}/zones/europe-west1-b/diskTypes/pd-ssd",
+          "diskSizeGb": "20"
+        },
+        "diskEncryptionKey": {}
+      }
+    ],
+    "canIpForward": false,
+    "networkInterfaces": [
+      {
+        "kind": "compute#networkInterface",
+        "subnetwork": "projects/{PROJECT_ID}/regions/europe-west1/subnetworks/default",
+        "accessConfigs": [
+          {
+            "kind": "compute#accessConfig",
+            "name": "External NAT",
+            "type": "ONE_TO_ONE_NAT",
+            "networkTier": "PREMIUM"
+          }
+        ],
+        "aliasIpRanges": []
+      }
+    ],
+    "description": "",
+    "labels": {},
+    "scheduling": {
+      "preemptible": false,
+      "onHostMaintenance": "TERMINATE",
+      "automaticRestart": false,
+      "nodeAffinities": []
+    },
+    "deletionProtection": false
+  }
+  
