@@ -11,10 +11,10 @@ def handler(system, this):
             'interval': 60,
             'wait': True,
         }
-        try:
+        if 'flow_name' in inputs:
             defaults['flow_name'] = inputs['flow_name']
-        except Exception:
-            pass
+        if 'flow_id' in inputs:
+            defaults['flow_name'] = system.flow(inputs['flow_id'], by='id').get('name')
 
         message = system.message(
             subject='Recurring execution',
