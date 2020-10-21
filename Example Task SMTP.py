@@ -3,7 +3,7 @@ def handler(system, this):
     this.task(
         'SMTP',
         inputs={
-                'from': 'cloudomation@cloudomation.com',
+                'from': 'Cloudomation <info@cloudomation.com>',
                 'to': 'info@cloudomation.com',
                 'subject': 'Cloudomation email',
                 # the text will be the email body. Alternatively you could add
