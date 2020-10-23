@@ -33,16 +33,14 @@
 
 import os
 import yaml
+import base64
 
 
 def handler(system, this):
-    inputs = this.get('input_value')
-    try:
-        commit_sha = inputs['json']['commit_sha']
-    except (KeyError, TypeError):
-        commit_sha = 'master'
+    # this flow script will sync from the master branch.
+    ref = 'master'
 
-    # read the connection information of the private repository
+    # get the connection information for the github repo
     repo_info = system.setting('github_info').get('value')
     github_username = repo_info['github_username']
     github_repo_name = repo_info['github_repo_name']
@@ -53,31 +51,37 @@ def handler(system, this):
         f'{github_username}/{github_repo_name}.git'
     )
 
-    this.task(
+    # the git 'get' command fetches the content of the repository.
+    files = this.task(
         'GIT',
         command='get',
         repository_url=repo_url,
-        files_path='synced_from_git',
-        ref=commit_sha,
-    )
-    # the git 'get' command ensures the content of the repository in a local
-    # folder. it will clone or fetch and merge.
+        ref=ref,
+    ).get('output_value')['files']
 
-    # list all flows from the repository
-    # this call will return a list of File objects
-    files = system.files(filter={'field': 'name', 'op': 'like', 'value': 'synced_from_git/%'})
+    # iterate over all files
     for file_ in files:
         # split the path and filename
-        path, filename = os.path.split(file_.get('name'))
+        path, filename = os.path.split(file_['name'])
         # split the filename and file extension
         name, ext = os.path.splitext(filename)
-        if path == 'flows' and ext == '.py':
+
+        # Create or update flow scripts from all .py files.
+        if ext == '.py':
+            # decode the base64 file content to text
+            text_content = base64.b64decode(file_['content']).decode()
             # create or update Flow object
-            system.flow(name).save(script=file_.get('content'))
-        elif path == 'settings' and ext == '.yaml':
+            system.flow(name).save(script=text_content)
+
+        # Create or update settings from all .yaml files.
+        elif ext == '.yaml':
+            # decode the base64 file content to text
+            text_content = base64.b64decode(file_['content']).decode()
             # load the yaml string in the file content
-            value = yaml.safe_load(file_.get('content'))
+            value = yaml.safe_load(text_content)
             # create or update Setting object
             system.setting(name).save(value=value)
 
-    return this.success('Github sync complete')
+        # All files that have a file extension other than .py or .yaml are ignored.
+
+    this.success('Github sync complete')
