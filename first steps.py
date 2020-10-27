@@ -21,7 +21,9 @@ def handler(system, this):
     delay = 0
     file_content = ''
     message = ''
-    
+    time_out = 30*60
+    poll_interval = 10
+
     def get_message(step):
         messages = [
             textwrap.dedent( # step 1
@@ -366,10 +368,11 @@ def handler(system, this):
 
         m.wait()
         dt_now = datetime.datetime.now(tz=datetime.timezone.utc)
-
+        
         if step == 2:
+            start_time = time.time()
             flow = None
-            while flow is None:
+            while flow is None and time.time() < start_time + time_out:
                 for cur_flow in system.flows():
                     try:
                         if cur_flow.get('created_at') is not None and datetime.datetime.strptime(cur_flow.get('created_at'), DT_FORMAT) > dt_now:
@@ -377,11 +380,12 @@ def handler(system, this):
                             break
                     except Exception:
                         pass
-                this.sleep(1)
+                this.sleep(poll_interval)
 
         elif step == 3 or step == 6:
+            start_time = time.time()
             execution = None
-            while execution is None:
+            while execution is None and time.time() < start_time + time_out:
                 for cur_execution in system.executions():
                     try:
                         if cur_execution.get('created_at') is not None and datetime.datetime.strptime(cur_execution.get('created_at'), DT_FORMAT) > dt_now:
@@ -389,7 +393,7 @@ def handler(system, this):
                             break
                     except Exception:
                         pass
-                this.sleep(1)
+                this.sleep(poll_interval)
             if step == 3:
                 execution.wait()
                 execution_name, execution_status, output_value = execution.load('name', 'status', 'output_value')
@@ -398,8 +402,9 @@ def handler(system, this):
                 execution_name = execution.load('name')
         
         elif step == 4:
+            start_time = time.time()
             setting = None
-            while setting is None:
+            while setting is None and time.time() < start_time + time_out:
                 for cur_setting in system.settings():
                     try:
                         if cur_setting is not None and cur_setting.get('created_at') is not None and datetime.datetime.strptime(cur_setting.get('created_at'), DT_FORMAT) > dt_now:
@@ -407,12 +412,13 @@ def handler(system, this):
                             break
                     except Exception:
                         pass
-                this.sleep(1)
+                this.sleep(poll_interval)
             setting_id = setting.get('id')
 
         elif step == 5:
+            start_time = time.time()
             before_modified_at = setting.load('modified_at')
-            while True:
+            while time.time() < start_time + time_out:
                 setting = None
                 for cur_setting in system.settings():
                     try:
@@ -473,20 +479,22 @@ def handler(system, this):
                         )
                         check_m.wait()
                         continue
-                this.sleep(1)
+                this.sleep(poll_interval)
             setting_name, setting_value = setting.load('name', 'value')
             text = setting_value['text']
             iterations = setting_value['iterations']
             delay = setting_value['delay']
         elif step == 7:
-            while True:
+            start_time = time.time()
+            while time.time() < start_time + time_out:
                 if execution.load('status') in ('PAUSED', 'ENDED_SUCCESS', 'ENDED_ERROR', 'ENDED_CANCELLED'):
                     break
-                this.sleep(1)
+                this.sleep(poll_interval)
         elif step == 9:
+            start_time = time.time()
             file_content = None
             execution = None
-            while True:
+            while time.time() < start_time + time_out:
                 if file_content is None:
                     for cur_files in system.files():
                         try:
@@ -504,12 +512,13 @@ def handler(system, this):
                             pass
                 if file_content and execution:
                     break
-                this.sleep(1) 
+                this.sleep(poll_interval) 
             execution_name = execution.load('name')
         elif step == 10:
+            start_time = time.time()
             task = None
             execution = None
-            while True:
+            while time.time() < start_time + time_out:
                 for cur_execution in system.executions():
                     try:
                         created_at = cur_execution.get('created_at')
@@ -522,7 +531,7 @@ def handler(system, this):
                         pass
                 if task and execution:
                     break
-                this.sleep(1)
+                this.sleep(poll_interval)
             execution.wait(return_when=system.return_when.ALL_SUCCEEDED)
             execution_name = execution.load('name')
             message = unescape(task.get('output_value')['json']['value']['joke'])
