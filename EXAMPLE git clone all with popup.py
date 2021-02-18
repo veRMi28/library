@@ -88,9 +88,8 @@ def handler(system: flow_api.System, this: flow_api.Execution):
             password=git_password,
         ).get('output_value')['files']
     except flow_api.exceptions.DependencyFailedError as err:
-        files = None
         # send the error message to the output of this execution:
-        this.set_output(err)
+        return this.error(repr(err))
 
     # iterate over all files and save them on Cloudomation:
     for file_ in files:
