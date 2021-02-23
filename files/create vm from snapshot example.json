@@ -1,6 +1,6 @@
 {
     "kind": "compute#instance",
-    "name": "build-server",
+    "name": "google-cloud-vm",
     "zone": "projects/my-project-id/zones/server-location",
     "machineType": "projects/my-project-id/zones/server-location/machineTypes/my-machine-type",
     "displayDevice": {
@@ -29,9 +29,9 @@
         "boot": true,
         "mode": "READ_WRITE",
         "autoDelete": true,
-        "deviceName": "build-server",
+        "deviceName": "google-cloud-vm",
         "initializeParams": {
-          "sourceSnapshot": "global/snapshots/build-server-template",
+          "sourceImage": "projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20210211",
           "diskType": "projects/my-project-id/zones/server-location/diskTypes/pd-ssd",
           "diskSizeGb": "20"
         },
@@ -42,7 +42,7 @@
     "networkInterfaces": [
       {
         "kind": "compute#networkInterface",
-        "subnetwork": "projects/my-project-id/regions/europe-west1/subnetworks/default",
+        "subnetwork": "projects/my-project-id/regions/server-region/subnetworks/default",
         "accessConfigs": [
           {
             "kind": "compute#accessConfig",
