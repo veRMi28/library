@@ -1,0 +1,67 @@
+{
+    "kind": "compute#instance",
+    "name": "google-cloud-vm",
+    "zone": "projects/my-project-id/zones/server-location",
+    "machineType": "projects/my-project-id/zones/server-location/machineTypes/my-machine-type",
+    "displayDevice": {
+      "enableDisplay": false
+    },
+    "metadata": {
+      "kind": "compute#metadata",
+      "items": [
+        {
+          "key": "startup-script",
+          "value": "{{startup_script}}"
+        },
+        {
+          "key": "enable-guest-attributes",
+          "value": "TRUE"
+        }
+      ]
+    },
+    "tags": {
+      "items": []
+    },
+    "disks": [
+      {
+        "kind": "compute#attachedDisk",
+        "type": "PERSISTENT",
+        "boot": true,
+        "mode": "READ_WRITE",
+        "autoDelete": true,
+        "deviceName": "google-cloud-vm",
+        "initializeParams": {
+          "sourceImage": "projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20210211",
+          "diskType": "projects/my-project-id/zones/server-location/diskTypes/pd-ssd",
+          "diskSizeGb": "20"
+        },
+        "diskEncryptionKey": {}
+      }
+    ],
+    "canIpForward": false,
+    "networkInterfaces": [
+      {
+        "kind": "compute#networkInterface",
+        "subnetwork": "projects/my-project-id/regions/server-region/subnetworks/default",
+        "accessConfigs": [
+          {
+            "kind": "compute#accessConfig",
+            "name": "External NAT",
+            "type": "ONE_TO_ONE_NAT",
+            "networkTier": "PREMIUM"
+          }
+        ],
+        "aliasIpRanges": []
+      }
+    ],
+    "description": "",
+    "labels": {},
+    "scheduling": {
+      "preemptible": false,
+      "onHostMaintenance": "TERMINATE",
+      "automaticRestart": false,
+      "nodeAffinities": []
+    },
+    "deletionProtection": false
+  }
+  
