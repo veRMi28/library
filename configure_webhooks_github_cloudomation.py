@@ -29,7 +29,9 @@
 # Enjoy :)
 
 
-def handler(system, this):
+import flow_api
+
+def handler(system: flow_api.System, this: flow_api.Execution):
     # (1) Set up a Cloudomation webhook
     # which triggers a flow script which synchronises settings and flow scripts
     # from a github repo

@@ -1,4 +1,6 @@
-def handler(system, this):
+import flow_api
+
+def handler(system: flow_api.System, this: flow_api.Execution):
     # create an SMPT task and run it
     this.task(
         'SMTP',
@@ -17,4 +19,4 @@ def handler(system, this):
         }
     )
     # there are no outputs for the SMTP task
-    this.success(message='all done')
+    return this.success(message='all done')

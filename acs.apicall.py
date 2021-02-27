@@ -20,8 +20,9 @@ outputs:
         doc: the result json of the api key as dict
 """
 
-def handler(system, this):
+import flow_api
 
+def handler(system: flow_api.System, this: flow_api.Execution):
     # retrieve the necessary inputs and store them in local variables
     inputs = this.get('input_value')
     command = inputs.get('command')

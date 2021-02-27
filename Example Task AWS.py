@@ -1,7 +1,8 @@
 import textwrap
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     # ======= configuration =======
 
     # Required: store AWS credentials in a setting

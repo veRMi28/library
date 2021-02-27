@@ -4,8 +4,7 @@ from Crypto.PublicKey import RSA
 
 import flow_api
 
-
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     """ 
         In this example we setup a Virtual Machine (VM) in the google-cloud. 
         Then, Ubuntu will be installed and a small bash script is executed. 

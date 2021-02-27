@@ -1,4 +1,6 @@
-def handler(system, this):
+import flow_api
+
+def handler(system: flow_api.System, this: flow_api.Execution):
     # get the contents of a public github repository
     task = this.task(
         'GIT',
@@ -26,4 +28,4 @@ def handler(system, this):
     files = system.files(dir='flow_library')
     for file in files:
         this.log(file)
-    this.success('all done')
+    return this.success('all done')

@@ -2,8 +2,9 @@ import uuid
 import textwrap
 import time
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     now = time.time()
     env_name = system.get_env_name()
     check_id = uuid.uuid4().hex
@@ -17,10 +18,14 @@ def handler(system, this):
     }
 
     # start a script execution via the rest api
-    script = textwrap.dedent('''
-        def handler(system, this):
+    script = textwrap.dedent(
+        '''
+        import flow_api
+
+        def handler(system: flow_api.System, this: flow_api.Execution):
             return this.success('done')
-        ''')
+        '''
+    )
     check_task = this.task(
         'REST',
         url=f'https://{env_name}.cloudomation.com/api/1/execution',

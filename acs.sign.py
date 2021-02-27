@@ -22,8 +22,9 @@ outputs:
         doc: the encoded query string for the api call to apache cloud stack
 """
 
-def handler(system, this):
+import flow_api
 
+def handler(system: flow_api.System, this: flow_api.Execution):
     # retrieve the necessary inputs and store them in local variables
     data = this.get('input_value')
     command = data.get('command')

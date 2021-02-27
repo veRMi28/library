@@ -1,4 +1,6 @@
-def handler(system, this):
+import flow_api
+
+def handler(system: flow_api.System, this: flow_api.Execution):
     postgres_server_version = this.task(
         'SQLPS',
         host='my-postgres-server',

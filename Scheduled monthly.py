@@ -15,8 +15,9 @@ inputs:
 import datetime
 import dateutil.relativedelta
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     """
     Create a message form to ask for details and schedule a flow
     """

@@ -16,9 +16,10 @@
 # purposes only. Since this demo account also has usage limits, there is a
 # chance that the flow script will fail due to these limits.
 
+import flow_api
 
 # (1) define handler function for the Cloudomation class (c)
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
 
 # (2) use settings
     # To use the geonames REST API, it is required to register an application,
@@ -175,7 +176,7 @@ def handler(system, this):
     # (7) end execution
 
     # we add the user feedback to the end message
-    this.success(
+    return this.success(
         message=(
             f'Country info provided. Did the user like the information? '
             f'{user_feedback}')

@@ -35,8 +35,9 @@ import os
 import yaml
 import base64
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     # this flow script will sync from the master branch.
     ref = 'master'
 
@@ -84,4 +85,4 @@ def handler(system, this):
 
         # All files that have a file extension other than .py or .yaml are ignored.
 
-    this.success('Github sync complete')
+    return this.success('Github sync complete')

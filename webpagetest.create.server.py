@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 
+import flow_api
+
 '''
 Creates and starts a server from a template called webpagetest-server-template
 Inputs:
@@ -8,7 +10,8 @@ Inputs:
 Outputs:
     wait: <bool> False, if the server is already running, otherwise True
 '''
-def handler(system, this):
+
+def handler(system: flow_api.System, this: flow_api.Execution):
     inputs = system.get('input_value')
     gcloud_connection = inputs.get('gcloud_connection')
     project_id = system.connection(gcloud_connection).get('value').get('key').get('project_id')
