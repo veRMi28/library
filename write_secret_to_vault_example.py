@@ -6,12 +6,12 @@ def handler(system: flow_api.System, this: flow_api.Execution):
     path = 'abcd-test'
     my_secrets = {
         "password": "my-password",
-        "username": "abcd@cloudomation.com",
+        "username": "user@example.com",
     }
     # my_secrets = {
     #     "data": {
-    #         "password": "JKF8z9fesehGFW7e",
-    #         "username": "michael@cloudomation.com",
+    #         "password": "my-password",
+    #         "username": "user@example.com",
     #     }
     # }
     
