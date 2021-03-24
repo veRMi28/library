@@ -8,12 +8,6 @@ def handler(system: flow_api.System, this: flow_api.Execution):
         "password": "my-password",
         "username": "user@example.com",
     }
-    # my_secrets = {
-    #     "data": {
-    #         "password": "my-password",
-    #         "username": "user@example.com",
-    #     }
-    # }
     
     my_vault = system.vault_config(target_vault)
     my_vault.write_secret(
