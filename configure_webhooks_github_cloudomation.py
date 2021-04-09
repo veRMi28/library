@@ -57,6 +57,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                     'start': {
                         'label': 'OK',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 2,
                     },
                 },

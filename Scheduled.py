@@ -44,6 +44,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                     'start': {
                         'label': 'Start schedule',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 4,
                     },
                 },

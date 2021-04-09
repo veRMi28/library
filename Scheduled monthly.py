@@ -70,6 +70,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                     'start': {
                         'label': 'Start monthly schedule',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 5,
                     },
                 },

@@ -62,6 +62,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                 'Ok': {
                     'element': 'submit',
                     'label': 'OK',
+                    'type': 'boolean',
                     'order': 6,
                 },
             },
@@ -86,6 +87,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                     },
                     'submit': {
                         'element': 'submit',
+                        'type': 'boolean',
                         'label': 'OK',
                     },
                 },
@@ -185,6 +187,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                         'Ok': {
                             'element': 'submit',
                             'label': 'OK',
+                            'type': 'boolean',
                             'order': 2,
                         },
                     },
@@ -206,6 +209,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                         'Ok': {
                             'element': 'submit',
                             'label': 'OK',
+                            'type': 'boolean',
                             'order': 2,
                         },
                     },

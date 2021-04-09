@@ -51,6 +51,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
                     'start': {
                         'label': 'Start delayed',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 5,
                     },
                 },
