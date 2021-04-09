@@ -61,6 +61,7 @@ def handler(system, this):
                 'Ok': {
                     'element': 'submit',
                     'label': 'OK',
+                    'type': 'boolean',
                     'order': 6,
                 },
             },
@@ -85,6 +86,7 @@ def handler(system, this):
                     },
                     'submit': {
                         'element': 'submit',
+                        'type': 'boolean',
                         'label': 'OK',
                     },
                 },
@@ -184,6 +186,7 @@ def handler(system, this):
                         'Ok': {
                             'element': 'submit',
                             'label': 'OK',
+                            'type': 'boolean',
                             'order': 2,
                         },
                     },
@@ -205,6 +208,7 @@ def handler(system, this):
                         'Ok': {
                             'element': 'submit',
                             'label': 'OK',
+                            'type': 'boolean',
                             'order': 2,
                         },
                     },

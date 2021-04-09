@@ -50,6 +50,7 @@ def handler(system, this):
                     'start': {
                         'label': 'Start delayed',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 5,
                     },
                 },

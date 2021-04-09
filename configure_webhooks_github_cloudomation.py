@@ -55,6 +55,7 @@ def handler(system, this):
                     'start': {
                         'label': 'OK',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 2,
                     },
                 },

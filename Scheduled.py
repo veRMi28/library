@@ -43,6 +43,7 @@ def handler(system, this):
                     'start': {
                         'label': 'Start schedule',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 4,
                     },
                 },

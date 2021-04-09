@@ -53,6 +53,7 @@ def handler(system, this):
                     'start': {
                         'label': 'Start recurring',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 5,
                     },
                 },

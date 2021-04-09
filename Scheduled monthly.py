@@ -69,6 +69,7 @@ def handler(system, this):
                     'start': {
                         'label': 'Start monthly schedule',
                         'element': 'submit',
+                        'type': 'boolean',
                         'order': 5,
                     },
                 },
