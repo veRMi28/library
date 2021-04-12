@@ -12,11 +12,12 @@ inputs:
         doc: the name of the flow script to be scheduled
 """
 
-import datetime
+import datetime, pytz
 import dateutil.relativedelta
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     """
     Create a message form to ask for details and schedule a flow
     """
@@ -99,6 +100,7 @@ def handler(system, this):
     scheduled_at_day = response['scheduled_at_day']
     scheduled_at_time = response['scheduled_at_time']
     max_iterations = response.get('max_iterations')
+    local_tz = response.get('timezone', 'Europe/Vienna')
     this.save(name=f'Scheduled {flow_name}')
 
     scheduled_at_time_t = datetime.datetime.strptime(scheduled_at_time, '%H:%M:%S%z').timetz()
@@ -106,12 +108,13 @@ def handler(system, this):
     iterations = 0
     start = datetime.datetime.now(datetime.timezone.utc).timestamp()
     while max_iterations is None or iterations < max_iterations:
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.timezone.utc).astimezone(pytz.timezone(local_tz))
         this.log(now=now)
         today = now.date()
         this.log(today=today, day=today.day)
         scheduled_at_day_t = today.replace(day=scheduled_at_day)
         scheduled_t = datetime.datetime.combine(scheduled_at_day_t, scheduled_at_time_t)
+        scheduled_t = pytz.timezone(local_tz).localize(scheduled_t)
         if scheduled_t < now:
             scheduled_t += dateutil.relativedelta.relativedelta(months=1)
         this.log(scheduled_t=scheduled_t)

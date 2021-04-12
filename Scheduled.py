@@ -1,7 +1,8 @@
-import datetime
+import datetime, pytz
+import flow_api
 
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     inputs = this.get('input_value') or {}
     message_id = inputs.get('message_id')
 
@@ -71,6 +72,7 @@ def handler(system, this):
     flow_name = response['flow_name']
     scheduled_at = response['scheduled_at']
     max_iterations = response.get('max_iterations')
+    local_tz = response.get('timezone', 'Europe/Vienna')
     this.save(name=f'Scheduled {flow_name}')
 
     scheduled_at_t = datetime.datetime.strptime(scheduled_at, '%H:%M:%S%z').timetz()
@@ -78,15 +80,17 @@ def handler(system, this):
     iterations = 0
     start = datetime.datetime.now(datetime.timezone.utc).timestamp()
     while max_iterations is None or iterations < max_iterations:
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.timezone.utc).astimezone(pytz.timezone(local_tz))
         this.log(now=now)
         today = now.date()
         this.log(today=today)
         scheduled = datetime.datetime.combine(today, scheduled_at_t)
+        scheduled = pytz.timezone(local_tz).localize(scheduled)
         this.log(scheduled=scheduled)
         if scheduled < now:  # next iteration tomorrow
             tomorrow = today + datetime.timedelta(days=1)
             scheduled = datetime.datetime.combine(tomorrow, scheduled_at_t)
+            scheduled = pytz.timezone(local_tz).localize(scheduled)
             this.log(scheduled=scheduled)
         scheduled_ts = scheduled.isoformat(sep=' ', timespec='minutes')
         this.log(scheduled_ts=scheduled_ts)
