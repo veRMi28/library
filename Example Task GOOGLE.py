@@ -12,7 +12,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
             'body': instance_config,
             'project': project_id,
             'zone': 'europe-west3-b',
-        }
+        },
         key=key,
         scopes=['https://www.googleapis.com/auth/compute'],
     )
