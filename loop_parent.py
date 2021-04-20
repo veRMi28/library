@@ -26,7 +26,9 @@
 
 # (1) Define handler function which receives the Cloudomation System
 # object (system) and an Execution object of this execution (this)
-def handler(system, this):
+import flow_api
+
+def handler(system: flow_api.System, this: flow_api.Execution):
 
 # (2) Create a setting with country names
     # In a real-life application of this functionality, this setting would
@@ -116,4 +118,4 @@ def handler(system, this):
         this.log(invalid_countries=invalids)
 
 # (6) Once we're done we end the execution.
-    this.success(message='all done')
+    return this.success(message='all done')

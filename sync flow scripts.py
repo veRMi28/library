@@ -10,8 +10,9 @@ import os
 import yaml
 import base64
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     """
     Clone a git repository, create Cloudomation objects from the files.
     All .py files in the flows/ subdirectory will be stored as Flows.
@@ -62,4 +63,4 @@ def handler(system, this):
             # pass the base64 encoded binary file content directly
             system.file(filename).save(content=file_['content'], convert_binary=False)
 
-    this.success('all done')
+    return this.success('all done')

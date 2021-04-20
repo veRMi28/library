@@ -1,8 +1,9 @@
 import time
 from datetime import datetime, timezone
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     inputs = this.get('input_value') or {}
     message_id = inputs.get('message_id')
 

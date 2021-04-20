@@ -4,8 +4,9 @@ import yaml
 import datetime
 from xml.sax.saxutils import unescape
 
+import flow_api
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     DT_FORMAT = '%Y-%m-%dT%H:%M:%S.%f%z'
     number_of_steps = 12
     user_name = system.get_own_user().get('name')
@@ -98,7 +99,8 @@ def handler(system, this):
                     <strong class="d-block pb-1">Your tasks:</strong>
                     <div><i class="fa fa-check-square-o"></i> Change the name of the flow to something more useful, like "my first flow".</div>
                     <div><i class="fa fa-check-square-o"></i> Replace the script with the following:
-                        <pre class="ml-3"><code>def handler(system, this):
+                        <pre class="ml-3"><code>import flow_api
+                def handler(system: flow_api.System, this: flow_api.Execution):
                     this.log('Hello {user_name}!')
                     return this.success('all done')</code></pre>
                     </div>
@@ -170,7 +172,8 @@ def handler(system, this):
                     <strong class="d-block pb-1">Your tasks:</strong>
                     <div><i class="fa fa-check-square-o"></i> Create a new flow.</div>
                     <div><i class="fa fa-check-square-o"></i> Paste the following script:
-                        <pre class="ml-3"><code>def handler(system, this):
+                        <pre class="ml-3"><code>import flow_api
+                def handler(system: flow_api.System, this: flow_api.Execution):
                     # read the value of the setting record
                     test_setting = system.setting('{setting_name}').get('value')
                     # loop `iterations` times
@@ -235,14 +238,15 @@ def handler(system, this):
                     <div><i class="fa fa-check-square-o"></i> Create a file by pressing <span class="text-primary"><i class="fa fa-file-o"></i> New</span> in the action bar.</div>
                     <div><i class="fa fa-check-square-o"></i> Rename the file to <code>myfile.txt</code> and write something into the text field and press <span class="text-primary"><i class="fa fa-save"></i> Save</span> in the action bar.</div>                    
                     <div><i class="fa fa-check-square-o"></i> Create a new flow and paste the following script into the code editor:
-                    <pre class="ml-3"><code>def handler(system, this):
+                    <pre class="ml-3"><code>import flow_api
+                def handler(system: flow_api.System, this: flow_api.Execution):
                     # read the value of the file
                     read_file = system.file(
                         name='myfile.txt'
                     )
                     # print contents of the file to the log output
                     this.log(read_file.get('content'))
-                    this.success(message='all done')</code></pre>
+                    return this.success(message='all done')</code></pre>
                     </div>
                     <div><i class="fa fa-check-square-o"></i> Create an execution of the flow by pressing <span class="text-success"><i class="fa fa-play"></i> Try</span> in the action bar.</div>
                 </div>
@@ -268,7 +272,8 @@ def handler(system, this):
                     <strong class="d-block pb-1">Your tasks:</strong>
                     <div><i class="fa fa-check-square-o"></i> Create a new flow.</div>
                     <div><i class="fa fa-check-square-o"></i> Paste the following script:
-                    <pre><code>def handler(system, this):
+                    <pre><code>import flow_api
+                def handler(system: flow_api.System, this: flow_api.Execution):
                     # create a REST task and run it
                     task = this.task('REST', url='https://api.icndb.com/jokes/random')
                     # access a field of the JSON response

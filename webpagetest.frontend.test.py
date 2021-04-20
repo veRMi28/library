@@ -2,6 +2,8 @@
 import time
 import json
 
+import flow_api
+
 '''
 Frontend testing with Webpagetest
 Parameters for the test are in the setting 'webpagetest'.
@@ -24,8 +26,7 @@ Inputs:
     gcloud_connection: <string> name of the connection stored in the cloudomation workspace
 '''
 
-def handler(system, this):
-
+def handler(system: flow_api.System, this: flow_api.Execution):
     start_time = time.time()
     inputs = system.get('input_value')
     gcloud_connection = inputs.get('gcloud_connection')

@@ -6,8 +6,9 @@ key: your-api-key
 secret: your-api-secret
 """
 
-def handler(system, this):
-    
+import flow_api
+
+def handler(system: flow_api.System, this: flow_api.Execution):
     # retrieve the apikey and secret from the system setting
     setting = system.setting('exoscale.api').get('value')
     

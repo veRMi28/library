@@ -20,8 +20,9 @@
 # 3. sync_from_github
 
 
-def handler(system, this):
+import flow_api
 
+def handler(system: flow_api.System, this: flow_api.Execution):
     github_form_response = system.message(
         subject='GitHub info',
         message_type = 'POPUP',

@@ -3,13 +3,15 @@ from Crypto.PublicKey import RSA
 import contextlib
 import json
 
+import flow_api
+
 '''
 Creates a server called webpagetest-server-template and stores it as a snapshot in gcloud
 Inputs:
     gcloud_connection: <string> name of the connection stored in the cloudomation workspace    
 '''
 
-def handler(system, this):
+def handler(system: flow_api.System, this: flow_api.Execution):
     inputs = system.get('input_value')
     gcloud_connection = inputs.get('gcloud_connection')
     project_id = system.connection(gcloud_connection).get('value').get('key').get('project_id')
@@ -504,4 +506,4 @@ def handler(system, this):
                     break
                 this.sleep(1)
 
-    this.success('all done')
+    return this.success('all done')
