@@ -99,22 +99,29 @@ def handler(system: flow_api.System, this: flow_api.Execution):
     flow_name = response['flow_name']
     scheduled_at_day = response['scheduled_at_day']
     scheduled_at_time = response['scheduled_at_time']
+    local_tz = response.get('timezone', 'Europe/Vienna')
     max_iterations = response.get('max_iterations')
     local_tz = response.get('timezone', 'Europe/Vienna')
     this.save(name=f'Scheduled {flow_name}')
 
-    scheduled_at_time_t = datetime.datetime.strptime(scheduled_at_time, '%H:%M:%S%z').timetz()
+    try:
+        scheduled_at_time_t = datetime.datetime.strptime(scheduled_at_time, '%H:%M:%S%z').timetz()
+    except ValueError:
+        scheduled_at_time_t = datetime.datetime.strptime(scheduled_at_time, '%H:%M:%S').timetz()
     this.log(scheduled_at_time_t=scheduled_at_time_t)
     iterations = 0
     start = datetime.datetime.now(datetime.timezone.utc).timestamp()
     while max_iterations is None or iterations < max_iterations:
-        now = datetime.datetime.now(datetime.timezone.utc).astimezone(pytz.timezone(local_tz))
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if scheduled_at_time_t.tzinfo is None:
+            now = now.astimezone(pytz.timezone(local_tz))
         this.log(now=now)
         today = now.date()
         this.log(today=today, day=today.day)
         scheduled_at_day_t = today.replace(day=scheduled_at_day)
         scheduled_t = datetime.datetime.combine(scheduled_at_day_t, scheduled_at_time_t)
-        scheduled_t = pytz.timezone(local_tz).localize(scheduled_t)
+        if scheduled_t.tzinfo is None or scheduled_t.tzinfo.utcoffset(scheduled_t) is None:
+            scheduled_t = pytz.timezone(local_tz).localize(scheduled_t)
         if scheduled_t < now:
             scheduled_t += dateutil.relativedelta.relativedelta(months=1)
         this.log(scheduled_t=scheduled_t)

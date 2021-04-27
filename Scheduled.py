@@ -1,5 +1,4 @@
 import datetime, pytz
-import flow_api
 
 import flow_api
 
@@ -76,23 +75,26 @@ def handler(system: flow_api.System, this: flow_api.Execution):
     local_tz = response.get('timezone', 'Europe/Vienna')
     this.save(name=f'Scheduled {flow_name}')
 
-    scheduled_at_t = datetime.datetime.strptime(scheduled_at, '%H:%M:%S%z').timetz()
+    try:
+        scheduled_at_t = datetime.datetime.strptime(scheduled_at, '%H:%M:%S%z').timetz()
+    except ValueError:
+        scheduled_at_t = datetime.datetime.strptime(scheduled_at, '%H:%M:%S').timetz()
     this.log(scheduled_at_t=scheduled_at_t)
     iterations = 0
     start = datetime.datetime.now(datetime.timezone.utc).timestamp()
     while max_iterations is None or iterations < max_iterations:
-        now = datetime.datetime.now(datetime.timezone.utc).astimezone(pytz.timezone(local_tz))
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if scheduled_at_t.tzinfo is None:
+            now = now.astimezone(pytz.timezone(local_tz))
         this.log(now=now)
         today = now.date()
         this.log(today=today)
         scheduled = datetime.datetime.combine(today, scheduled_at_t)
-        scheduled = pytz.timezone(local_tz).localize(scheduled)
-        this.log(scheduled=scheduled)
-        if scheduled < now:  # next iteration tomorrow
-            tomorrow = today + datetime.timedelta(days=1)
-            scheduled = datetime.datetime.combine(tomorrow, scheduled_at_t)
+        if scheduled.tzinfo is None or scheduled.tzinfo.utcoffset(scheduled) is None:
             scheduled = pytz.timezone(local_tz).localize(scheduled)
-            this.log(scheduled=scheduled)
+        if scheduled < now:  # next iteration tomorrow
+            scheduled += datetime.timedelta(days=1)
+        this.log(scheduled=scheduled)
         scheduled_ts = scheduled.isoformat(sep=' ', timespec='minutes')
         this.log(scheduled_ts=scheduled_ts)
         delta_sec = (scheduled - now).total_seconds()
