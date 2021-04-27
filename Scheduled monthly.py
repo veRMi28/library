@@ -101,6 +101,7 @@ def handler(system: flow_api.System, this: flow_api.Execution):
     scheduled_at_time = response['scheduled_at_time']
     local_tz = response.get('timezone', 'Europe/Vienna')
     max_iterations = response.get('max_iterations')
+    local_tz = response.get('timezone', 'Europe/Vienna')
     this.save(name=f'Scheduled {flow_name}')
 
     try:
