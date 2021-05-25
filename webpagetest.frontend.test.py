@@ -28,7 +28,7 @@ Inputs:
 
 def handler(system: flow_api.System, this: flow_api.Execution):
     start_time = time.time()
-    inputs = system.get('input_value')
+    inputs = this.get('input_value')
     gcloud_connection = inputs.get('gcloud_connection')
     task = this.flow('webpagetest.create.server', gcloud_connection=gcloud_connection)
     output = task.get('output_value')

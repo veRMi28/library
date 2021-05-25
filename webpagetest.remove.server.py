@@ -1,7 +1,7 @@
 import flow_api
 
 def handler(system: flow_api.System, this: flow_api.Execution):
-    inputs = system.get('input_value')
+    inputs = this.get('input_value')
     gcloud_connection = inputs.get('gcloud_connection')
     project_id = system.connection(gcloud_connection).get('value').get('key').get('project_id')
     if project_id is None or gcloud_connection is None:
