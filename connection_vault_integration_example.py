@@ -1,8 +1,6 @@
 import flow_api
 
 def handler(system: flow_api.System, this: flow_api.Execution):
-    vault_config = 'my-vaultconfig'
-    secret_path = 'my-git-secret'
     secret_key_user = 'username'
     secret_key_password = 'password'
 
@@ -15,7 +13,13 @@ def handler(system: flow_api.System, this: flow_api.Execution):
             'username': f'vault.secret({secret_key_user})',
             'password': f'vault.secret({secret_key_password})',
         },
-        vault_secrets=f'{vault_config}:{secret_path}',
+        vault_secrets=[
+            {
+                'vault_name': 'my-vaultconfig',
+                'engine_path': 'my-engine-path',
+                'secret_path': 'data/my-git-secret-path',
+            },
+        ]
     )
 
     # Use the connection:
